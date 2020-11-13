@@ -57,7 +57,7 @@ Then you will need to define a new Feature Class for each land cover of interest
 
 2. This will add a new *Geometry Imports* panel in your map window, with a label for the new properties you can now draw in the map window. The default name of this new layer is 'geometry'.
 
-![](figures/m1.2/m1.2.2/GeometryImports.jpg)
+![](figures/m1.2/m1.2.2/GeometryImports.JPG)
 
 3. Hold your cursor over the name 'geometry' in this panel until a gear icon appears on the right hand side of the label. Click on the gear to open the panel to edit the layer configuration.
 
@@ -81,11 +81,11 @@ For this tutorial, we reccomend using this land cover classification key and num
 
 Your panel should look like this:
 
-![](figures/m1.2/m1.2.2/GeomSettings.JPG)
+![](figures/m1.2/m1.2.2/GeomSettings.jpg)
 
 10. Back in the map window, hover your mouse over the geomerty imports and click on the option to *+ new layer*.
 
-![](figures/m1.2/m1.2.2/NewGeom.JPG)
+![](figures/m1.2/m1.2.2/NewGeom.jpg)
 
 11. Repeat steps 3 to 10 until you have a Feature Collection set up for each land cover type of interest.
 
@@ -128,7 +128,7 @@ Map.addLayer(s1_composite_masked, vis, 'Sentinel 2 2019 Masked');
 
 2. There is also another way to load imagery into GEE, this second option is to load an image from your Assets tab. If you exported an image composite to your GEE Asset folder, you can import that by navigating to the Assets folder. Then hover your mouse over the name of the composite image and select the arrow to import into the code editor. Make sure that the image that you load from your asset folder is defined as "image" so that the GEE code works. 
 
-![](figures/m1.2/m1.2.2/import.JPG)
+![](figures/m1.2/m1.2.2/import.jpg)
 
 
 3. Then copy the following text into the code editor to load it into the map window and click on *Run*.
@@ -156,7 +156,7 @@ Once you have decided on reference imagery then it is time to start collecting t
 1. Select the land cover layer in the *Geometry imports* panel in the map window.
 2. Select the point marker and click in the map to add points of that land cover. You can toggle the image composite on and off in the Layers panel. You can also toggle between the map and satellite composite in the upper righthand corner of the map window.
 
-![](figures/m1.2/m1.2.2/ToggleImage.JPG)
+![](figures/m1.2/m1.2.2/ToggleImage.jpg)
 
 3. If you drop a point accidentally, you can move it or delete it with the pan hand. 
 
