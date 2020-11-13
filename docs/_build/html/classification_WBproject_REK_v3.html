@@ -15,7 +15,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="1.2.2 Training Data Collection Using Google Earth Engine" href="gee.html" />
+    <link rel="prev" title="1.2.2 Training Data Collection Using Google Earth Engine”" href="Tenneson_TrainingData_GEE.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -55,7 +55,7 @@
 </li>
 </ul>
 <blockquote>
-<div><p>NOTE:  These topics are covered in Module 1.1</p>
+<div><p>NOTE:  These topics are covered in Module 1.1: Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</p>
 </div></blockquote>
 <ul class="simple">
 <li><p>Basic remote sensing concepts</p>
@@ -78,7 +78,7 @@
 <p>Most classification algorithms operate entirely in this data space. Classifiers attempt to separate the space into bounded regions within which all pixels belong to a labeled class.  Some classifiers consider the bounds between regions to be hard, while others are fuzzier, treating membership in class as a probability.</p>
 <p><img alt="Classified spectral space. Each pixel from the prior figure has been labeled according to a classification scheme defined by the analyst.  In an ideal case such as that shown here, all of the pixels in each class can be grouped together into bounded regions." src="_images/spectral_data_space_and_classes.png" /></p>
 <p>Once the bounds of the class have been defined in spectral space, any other pixels in the image can be label according to the area in which they land.</p>
-<p><img alt="An pixel in the image with spectral values that place it at the location indicated by &quot;Pixel D&quot; lands within the bounds of Class 3, and thus would be labeled Class 3." src="_images/spectral_space_classifier_new_pixel.png" /></p>
+<p><img alt="A pixel in the image with spectral values that place it at the location indicated by &quot;Pixel D&quot; lands within the bounds of Class 3, and thus would be labeled Class 3." src="_images/spectral_space_classifier_new_pixel.png" /></p>
 </div>
 <div class="section" id="land-cover-vs-land-use">
 <h3>2.2 Land cover vs. Land use<a class="headerlink" href="#land-cover-vs-land-use" title="Permalink to this headline">¶</a></h3>
@@ -114,7 +114,7 @@
 <div class="section" id="overview-of-workflow">
 <h3>3.1 Overview of workflow<a class="headerlink" href="#overview-of-workflow" title="Permalink to this headline">¶</a></h3>
 <p>Supervised classification refers to the process of using a training dataset with known labels to guide a mathematical classifier in the task of labeling spectral space. They key characteristic is that the training dataset guides (or “supervises”) the labeling.</p>
-<p>Although the specifics of the steps vary by classifier, the <a class="reference external" href="https://code.earthengine.google.com/1b1dbb7a31212ec2340f3b981a9f9979">supervised classification workflow in GEE</a> is similar across most variants.</p>
+<p>Although the specifics of the steps vary by classifier, the <a class="reference external" href="https://developers.google.com/earth-engine/guides/classification">supervised classification workflow in GEE</a> is similar across most variants.</p>
 <ul class="simple">
 <li><p>Get an image</p></li>
 <li><p>Get training data</p></li>
@@ -125,12 +125,32 @@
 <p><img alt="Workflow of classification" src="_images/lcluc_workflow.png" /></p>
 <p>This creates a map.  You will then need to evaluate how accurate that map is. This is covered in the later module on accuracy assessment.</p>
 <p>We will work through a simple example with the components noted below, and then illustrate variants on it. These instructions presume that you have an account on GEE, and are familiar with the setup, data formats, and functions in GEE.  If you need help with these steps, please go back to Module 1.1.</p>
-<p><strong>Classification component</strong>|<strong>Item used here</strong>|<strong>Module</strong>
-:—–:|:—–:|:—–:|
-Image|Landsat 8 composite from a single year|Module 1.1
-Training data|Point data|Module 1.2
-Classifier|CART|Current Module</p>
-<div class="section" id="get-set-up-load-the-script">
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"><strong>Classification component</strong></th>
+<th align="center"><strong>Item used here</strong></th>
+<th align="center"><strong>Module</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Image</td>
+<td align="center">Landsat 8 composite from a single year</td>
+<td align="center">Module 1.1</td>
+</tr>
+<tr>
+<td align="center">Training data</td>
+<td align="center">Point data</td>
+<td align="center">Module 1.2</td>
+</tr>
+<tr>
+<td align="center">Classifier</td>
+<td align="center">CART</td>
+<td align="center">Current Module</td>
+</tr>
+</tbody>
+</table><div class="section" id="get-set-up-load-the-script">
 <h4>3.1.1 Get set up:  Load the script<a class="headerlink" href="#get-set-up-load-the-script" title="Permalink to this headline">¶</a></h4>
 <ol class="simple">
 <li><p>Log in to GEE’s Javascript code editor at code.earthengine.google.com</p></li>
@@ -138,7 +158,7 @@ Classifier|CART|Current Module</p>
 </ol>
 <p><img alt="This is how you do it" src="_images/GEE_new_repo.png" /></p>
 <ol class="simple">
-<li><p>Open this <a class="reference external" href="https://code.earthengine.google.com/ad6ed9df3e04f889cf201ba11ba5caee">GEE script</a></p></li>
+<li><p>Open this <a class="reference external" href="https://code.earthengine.google.com/37dac7246f3c2c0603516eab4c5b490a">GEE script</a></p></li>
 <li><p>Save it to your favorite folder</p></li>
 </ol>
 <blockquote>
@@ -379,14 +399,14 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 <p>Using the simple cartoon shown earlier for the CART classifier, we can envision at least two cases where this can occur.</p>
 <p>Case 1:  A new pixel is encountered that lands in the part of spectral space already occupied by members of a different class.  This situation can occur when the two classes do not have sufficient spectral differences to be separated, or when density of training points is sparse enough that such apparently different lobes of spectral space are not sufficiently bounded.</p>
 <p>Case 2: A new pixel is encountered in a region of spectral space that does not have training samples, but which must be assigned a label by virtue of the splits identified by thte training samples that did exist.</p>
-<p>![Two cases of misclassification. In Case 1, a new pixel (noted with a square symbol) that should be labeled with the Orange class lands in the midst of representatives of the green class. In Case 2, a new pixel of the Orange class lands outside the domain of classes already defined, but because it is on the “Green side” of the first split, it gets labeled as green.](./figures/m1.3/misclassification.png “Two cases of misclassification. In Case 1, a new pixel noted with a square symbol that should be labeled with the Orange class lands in the midst of representatives of the green class. In Case 2, a new pixel of the Orange class lands outside the domain of classes already defined, but because it is on the “Green side” of the first split, it gets labeled as green.”)</p>
+<p><img alt="Two cases of misclassification. In Case 1, a new pixel (noted with a square symbol) that should be labeled with the Orange class lands in the midst of representatives of the green class. In Case 2, a new pixel of the Orange class lands outside the domain of classes already defined, but because it is on the &quot;Green side&quot; of the first split, it gets labeled as green." src="_images/misclassification.png" /></p>
 <p>At least three remedies exist for Case 1:</p>
 <ul class="simple">
 <li><p>Provide more dimensionality to the spectral data space.  Points that cannot be separated in a 2-d plane may be separable along a third axis, for example.  This requires adding spectral information at the beginning of the classification process.  The chance for success improves if that new dimension of data is thought to capture some characteristic that an expert might identify as separating the confused types.  For example, adding in a component that captures seasonality may separate two forest types that differ in the timing or duration of leaf condition.</p></li>
 <li><p>Obtain more training points in the conditions that are causing confusion.  By adding more points in parts of the spectral space where confusion is occurring, the classifier has a better chance of separating that group into the appropriate class.</p></li>
 <li><p>Apply a more flexible classifier to the same dataset.  A CART is a fairly simple classifier. It is possible that a more advanced classifer could achieve better rsults with the same training data.  See Section 3.8 for an example.</p></li>
 </ul>
-<p>Case 2 is a classic example of extending a statistical model outside the bounds for which it was built.  The best remedy for this case is to obtain omre sample points in the region where confusion occurs, with the goal of extending the domain of the training.</p>
+<p>Case 2 is a classic example of extending a statistical model outside the bounds for which it was built.  The best remedy for this case is to obtain more sample points in the region where confusion occurs, with the goal of extending the domain of the training.</p>
 </div>
 </div>
 <div class="section" id="applying-a-different-supervised-classifier-random-forests">
@@ -394,7 +414,7 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 <p>The Random Forests algorithm (Breiman 2001:  “Random Forests”. Machine Learning. 45 (1): 5–32) builds on the concepts of decision trees, but adds strategies to make them more powerful. Although a thorough treatment of Random Forests (RF) is beyond the scope of this training, a brief overview is presented here.</p>
 <p>The RF algorithm generates many decision trees (many “trees” make a “forest”), each with slightly different randomizations of both training data and predictor (here, spectral) data. Each split in a given decision tree is done with a subset of the training data and the spectral values.  This improves robustenss to outlier training points or predictor varriables.  When these many decision trees are built and then applied to the imagery, each pixel receives a label from each of the trees;  the final label is often taken as the one that occurs in the majority of trees for that pixel.</p>
 <p>Because the extraction of training data is the same for all classifiers in GEE, we need only build the new classifier from the prior training data, and then apply that to the image.  We will use the two-year composite image from section 3.7.</p>
-<p>First, we build the classifier:</p>
+<p>First, we build the classifier.  (Note that <code class="docutils literal notranslate"><span class="pre">training_extract_v3</span></code> is defined earlier in the script as an extraction from the two-year composite) :</p>
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">trained_RF</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">Classifier</span><span class="p">.</span><span class="nx">smileRandomForest</span><span class="p">(</span><span class="mi">250</span><span class="p">)</span>
   <span class="p">.</span><span class="nx">train</span><span class="p">(</span><span class="nx">training_extract_v3</span><span class="p">,</span> <span class="nx">landcover_labels</span><span class="p">,</span> <span class="nx">bands_to_use</span><span class="p">);</span>
 </pre></div>
@@ -423,8 +443,7 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 <p>A key challenge in supervised classification is to define classes that can be adequately separated in the spectral space of the imagery.  If the definitions of classes need not be strictly defined ahead of time, it can be possible to let the imagery find groupings (clusters) in the spectral space, and then attempt to attach descriptive labels to those clusters.  Because labeled training data are not used to guide this process, it is referred to as “unsupervised” classification.</p>
 <div class="section" id="the-k-means-algorithm">
 <h3>4.1 The <em>k</em>-means algorithm<a class="headerlink" href="#the-k-means-algorithm" title="Permalink to this headline">¶</a></h3>
-<p>Clustering algorithms are numerous.  The interested reader may consult</p>
-<p>https://en.wikipedia.org/wiki/Cluster_analysis or other generic introductions. In remote sensing, a commonly used approach is the <em>k</em>-means clusterer, implemented on GEE as the <code class="docutils literal notranslate"><span class="pre">ee.Clusterer.wekaKMeans</span></code> function.</p>
+<p>Clustering algorithms are numerous.  The interested reader may consult https://en.wikipedia.org/wiki/Cluster_analysis or other generic introductions. In remote sensing, a commonly used approach is the <em>k</em>-means clusterer, implemented on GEE as the <code class="docutils literal notranslate"><span class="pre">ee.Clusterer.wekaKMeans</span></code> function.</p>
 <p>The <em>k</em>-means approach uses an iterative regrouping strategy to identify groups of pixels near each other in spectral space. The user supplies a desired number (<em>k</em>) of clusters, and the algorithm then distributes that number of seed points into the spectral space. These seed locations are considered starting points of the eventual classes. The location of these seed points defaults to a random placement in the GEE implementation of the algorithm. A large sample of pixels in the image is then assigned to its closest seed point, and the mean spectral value of those pixels calculated.  That mean value is akin to a center of mass of the points, and is known as the centroid.  Unless the points that were nearest to a seed point happened to be symmetrically arranged around it, this calculated centroid is going to be moved slightly from where it started.  All of the pixels in the image are now  re-attached to centroids – often some pixels change centroids because of the movement of the centroids. When the new group of pixels is used for centroid calculation, the new centroid will move again.  The process is repeated until the centroids remain relatively stable and few pixels change from class to class on subsequent iterations.</p>
 </div>
 <div class="section" id="application-of-k-means-in-gee">
@@ -498,9 +517,9 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="composite.html">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="image_composite_Web.html">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qgis.html">1.2.1 Training Data Collection Using QGIS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gee.html">1.2.2 Training Data Collection Using Google Earth Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tenneson_TrainingData_GEE.html">1.2.2 Training Data Collection Using Google Earth Engine”</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">1.3 Land Cover and Land Use Classification</a></li>
 </ul>
 
@@ -508,7 +527,7 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="gee.html" title="previous chapter">1.2.2 Training Data Collection Using Google Earth Engine</a></li>
+      <li>Previous: <a href="Tenneson_TrainingData_GEE.html" title="previous chapter">1.2.2 Training Data Collection Using Google Earth Engine”</a></li>
   </ul></li>
 </ul>
 </div>
@@ -542,7 +561,7 @@ In our examples thus far, we have filtered out individual Landsat images with gr
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/classification.md.txt"
+      <a href="_sources/classification_WBproject_REK_v3.md.txt"
           rel="nofollow">Page source</a>
     </div>
 

@@ -18,7 +18,7 @@ At the end of this module, you will be able to:
 	* Basic syntax of functions
 	* Basic image processing, including choice of imagery, cloud-screening, mosaicking and compositing
 
-> NOTE:  These topics are covered in Module 1.1
+> NOTE:  These topics are covered in Module 1.1: Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine
 
 
 * Basic remote sensing concepts
@@ -42,7 +42,7 @@ Most classification algorithms operate entirely in this data space. Classifiers 
 
 Once the bounds of the class have been defined in spectral space, any other pixels in the image can be label according to the area in which they land. 
 
-![An pixel in the image with spectral values that place it at the location indicated by "Pixel D" lands within the bounds of Class 3, and thus would be labeled Class 3.](./figures/m1.3/spectral_space_classifier_new_pixel.png)
+![A pixel in the image with spectral values that place it at the location indicated by "Pixel D" lands within the bounds of Class 3, and thus would be labeled Class 3.](./figures/m1.3/spectral_space_classifier_new_pixel.png)
 
 
 #### 2.2 Land cover vs. Land use
@@ -65,7 +65,7 @@ Fundamentals of Remote Sensing|ARSET (NASA Applied Science)|https://appliedscien
 
 Supervised classification refers to the process of using a training dataset with known labels to guide a mathematical classifier in the task of labeling spectral space. They key characteristic is that the training dataset guides (or "supervises") the labeling. 
 
-Although the specifics of the steps vary by classifier, the [supervised classification workflow in GEE](https://code.earthengine.google.com/1b1dbb7a31212ec2340f3b981a9f9979) is similar across most variants. 
+Although the specifics of the steps vary by classifier, the [supervised classification workflow in GEE](https://developers.google.com/earth-engine/guides/classification) is similar across most variants. 
 
 - Get an image
 - Get training data
@@ -82,7 +82,7 @@ We will work through a simple example with the components noted below, and then 
 
 
 **Classification component**|**Item used here**|**Module**
-:-----:|:-----:|:-----:|
+:-----:|:-----:|:-----:
 Image|Landsat 8 composite from a single year|Module 1.1
 Training data|Point data|Module 1.2
 Classifier|CART|Current Module
@@ -94,7 +94,7 @@ Classifier|CART|Current Module
 
 ![This is how you do it](./figures/m1.3/GEE_new_repo.png)
 
-3. Open this [GEE script](https://code.earthengine.google.com/ad6ed9df3e04f889cf201ba11ba5caee)
+3. Open this [GEE script](https://code.earthengine.google.com/37dac7246f3c2c0603516eab4c5b490a)
 4. Save it to your favorite folder
 
 > Hint: You will need to make one alteration to the file to be able to save it under a local name.  Add a space somewhere in the script, then use the "Save As" function. 
@@ -129,7 +129,7 @@ Below is an image of a small area of Colombia in the region around Medellin.  Th
 Training data are the observations that we will use to build the classification. As noted above, the definitions of the class labels of these training data should be defined with consideration of the spectral properties of the surface.  
 
 For this exercise, we will use training data collected under the methods described in the modules on reference data collection (Module 1.2).  These data are included as an asset in the script provided above.  Alternatively, these can be added in a GEE script using: 
- 
+
 ```javascript
 var training = ee.FeatureCollection(
 'users/ramblingrek/colombia_training_4class_nov1');
@@ -389,7 +389,7 @@ Case 1:  A new pixel is encountered that lands in the part of spectral space alr
 
 Case 2: A new pixel is encountered in a region of spectral space that does not have training samples, but which must be assigned a label by virtue of the splits identified by thte training samples that did exist.  
 
-![Two cases of misclassification. In Case 1, a new pixel (noted with a square symbol) that should be labeled with the Orange class lands in the midst of representatives of the green class. In Case 2, a new pixel of the Orange class lands outside the domain of classes already defined, but because it is on the "Green side" of the first split, it gets labeled as green.](./figures/m1.3/misclassification.png "Two cases of misclassification. In Case 1, a new pixel noted with a square symbol that should be labeled with the Orange class lands in the midst of representatives of the green class. In Case 2, a new pixel of the Orange class lands outside the domain of classes already defined, but because it is on the "Green side" of the first split, it gets labeled as green.")
+![Two cases of misclassification. In Case 1, a new pixel (noted with a square symbol) that should be labeled with the Orange class lands in the midst of representatives of the green class. In Case 2, a new pixel of the Orange class lands outside the domain of classes already defined, but because it is on the "Green side" of the first split, it gets labeled as green.](./figures/m1.3/misclassification.png)
 
 At least three remedies exist for Case 1: 
 - Provide more dimensionality to the spectral data space.  Points that cannot be separated in a 2-d plane may be separable along a third axis, for example.  This requires adding spectral information at the beginning of the classification process.  The chance for success improves if that new dimension of data is thought to capture some characteristic that an expert might identify as separating the confused types.  For example, adding in a component that captures seasonality may separate two forest types that differ in the timing or duration of leaf condition. 
@@ -398,7 +398,7 @@ At least three remedies exist for Case 1:
 
 - Apply a more flexible classifier to the same dataset.  A CART is a fairly simple classifier. It is possible that a more advanced classifer could achieve better rsults with the same training data.  See Section 3.8 for an example. 
 
-Case 2 is a classic example of extending a statistical model outside the bounds for which it was built.  The best remedy for this case is to obtain omre sample points in the region where confusion occurs, with the goal of extending the domain of the training. 
+Case 2 is a classic example of extending a statistical model outside the bounds for which it was built.  The best remedy for this case is to obtain more sample points in the region where confusion occurs, with the goal of extending the domain of the training. 
 
 
 #### 3.8 Applying a different supervised classifier: Random Forests
@@ -409,7 +409,7 @@ The RF algorithm generates many decision trees (many "trees" make a "forest"), e
 
 Because the extraction of training data is the same for all classifiers in GEE, we need only build the new classifier from the prior training data, and then apply that to the image.  We will use the two-year composite image from section 3.7. 
 
-First, we build the classifier: 
+First, we build the classifier.  (Note that `training_extract_v3` is defined earlier in the script as an extraction from the two-year composite) : 
 
 ```javascript
 var trained_RF = ee.Classifier.smileRandomForest(250)
@@ -445,9 +445,7 @@ A key challenge in supervised classification is to define classes that can be ad
 
 #### 4.1 The *k*-means algorithm
 
-Clustering algorithms are numerous.  The interested reader may consult
- 
-https://en.wikipedia.org/wiki/Cluster_analysis or other generic introductions. In remote sensing, a commonly used approach is the *k*-means clusterer, implemented on GEE as the `ee.Clusterer.wekaKMeans` function.  
+Clustering algorithms are numerous.  The interested reader may consult https://en.wikipedia.org/wiki/Cluster_analysis or other generic introductions. In remote sensing, a commonly used approach is the *k*-means clusterer, implemented on GEE as the `ee.Clusterer.wekaKMeans` function.  
 
 The *k*-means approach uses an iterative regrouping strategy to identify groups of pixels near each other in spectral space. The user supplies a desired number (*k*) of clusters, and the algorithm then distributes that number of seed points into the spectral space. These seed locations are considered starting points of the eventual classes. The location of these seed points defaults to a random placement in the GEE implementation of the algorithm. A large sample of pixels in the image is then assigned to its closest seed point, and the mean spectral value of those pixels calculated.  That mean value is akin to a center of mass of the points, and is known as the centroid.  Unless the points that were nearest to a seed point happened to be symmetrically arranged around it, this calculated centroid is going to be moved slightly from where it started.  All of the pixels in the image are now  re-attached to centroids -- often some pixels change centroids because of the movement of the centroids. When the new group of pixels is used for centroid calculation, the new centroid will move again.  The process is repeated until the centroids remain relatively stable and few pixels change from class to class on subsequent iterations. 
 

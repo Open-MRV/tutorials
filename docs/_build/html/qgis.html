@@ -15,8 +15,8 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="1.2.2 Training Data Collection Using Google Earth Engine" href="gee.html" />
-    <link rel="prev" title="1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine" href="composite.html" />
+    <link rel="next" title="1.2.2 Training Data Collection Using Google Earth Engine”" href="Tenneson_TrainingData_GEE.html" />
+    <link rel="prev" title="1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine" href="image_composite_Web.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -41,7 +41,8 @@
 <p>This tutorial will demonstrate how to collect categorical training data for land cover classification using QGIS. Users should adjust the various components to match their project objectives. Here, the process is demonstrated for the country of Colombia and for a simple legend of four land cover classes: Forest, Water, Herbaceous, and Developed.</p>
 <div class="section" id="qgis">
 <h3>1.1 QGIS<a class="headerlink" href="#qgis" title="Permalink to this headline">¶</a></h3>
-<p>Quantum GIS (QGIS) is an open source GIS that runs on Windows, Linux, and Mac OS X. Users should consult the <a class="reference external" href="https://qgis.org/en/site/forusers/alldownloads.html">QGIS webpage</a> for background information and installation instructions. This tutorial is based on the longterm release <a class="reference external" href="https://docs.qgis.org/3.10/en/docs/user_manual/">Version 3.10.10</a>. For the core features of this tutorial, users will only need QGIS installed and an internet connection.</p>
+<p>Quantum GIS (QGIS) is an open source GIS software that runs on Windows, Linux, and Mac OS X. Users should consult the <a class="reference external" href="https://qgis.org/en/site/forusers/alldownloads.html">QGIS webpage</a> for background information and installation instructions. Since there are many different ways to install QGIS, depending on your operating system, installation instructions will not be detailed here. If users are not able to install QGIS we recommend switching to <a class="reference internal" href="Tenneson_TrainingData_GEE.html"><span class="doc">Module 1.2.2 Training Data Collection Using Google Earth Engine</span></a>.</p>
+<p>This tutorial is based on the longterm release <a class="reference external" href="https://docs.qgis.org/3.10/en/docs/user_manual/">Version 3.10.10</a>. For the core features of this tutorial, users will only need QGIS installed and an internet connection. For use of all the plugins described in this tutorial, users will need accounts with <a class="reference external" href="https://signup.earthengine.google.com/#%21/">Google Earth Engine</a> and <a class="reference external" href="https://www.planet.com/login/?mode=signup">Planet</a></p>
 </div>
 </div>
 <div class="section" id="learning-objectives">
@@ -89,14 +90,15 @@
 <p>To start, we will need to define a new shapefile layer.</p>
 <ol class="simple">
 <li><p>Select <em>Layer</em> -&gt; <em>Create Layer</em> -&gt; <em>New Shapefile Layer…</em>.</p></li>
-<li><p>Choose a filename to save your training data (in the example below I use the name ‘training_data_colombia_v1.shp’</p></li>
+<li><p>Choose a filename to save your training data (in the example below I use the name ‘training_data_colombia_v1.shp’. Choose a folder to save it in that you can easily access and remember.</p></li>
 <li><p>For <em>Geometry type</em> choose <em>Point</em>.</p></li>
 <li><p>Choose EPSG:4326 - WGS 84 for the projection.</p></li>
 <li><p>Delete the ‘id’ field by selecting it in the <em>Fields List</em> and selecting <em>Remove Field</em>.</p></li>
-<li><p>Add a new field of type <em>Whole number</em> named ‘class’ by selecting <em>Add to fields list</em>.</p></li>
+<li><p>Add a new field of type <em>Whole number</em> named ‘class’ by selecting <em>Add to fields list</em>. The <em>Length</em> of the field corresponds to the number of characters you can input, and the <em>Precision</em> is the number of digits. Choose atleast 2 for the field length. Since the type is <em>Whole number</em> we do not need to worry about precision.</p></li>
 </ol>
 <p>Your panel should look like this:</p>
 <p><img alt="_images/new_shapefile.JPG" src="_images/new_shapefile.JPG" /></p>
+<p>Click <em>Ok</em> and you should see that a new layer is added to the ‘Layers’ panel on the left of the screen. We will add to this layer in creating the training data.</p>
 </div>
 <div class="section" id="load-baselayers">
 <h3>3.3 Load baselayers<a class="headerlink" href="#load-baselayers" title="Permalink to this headline">¶</a></h3>
@@ -107,7 +109,8 @@
 </ul>
 <p>Luckily, there are numerous sources of high resolution reference imagery available directly within QGIS. The specific imagery to use will depend on your study period and region, but in general it is recommended to use as much data as possible.</p>
 <p>The following plugins offer access to reference imagery. Each plugin works with QGIS Version 3.1.10. However, users of this tutorial should follow the instructions from the plugin creators to ensure proper installation.</p>
-<p>Users should consider the options below and decide a source of reference data that matches the time period and geographic extent of your study region. Here, the process is demonstrated for Colombia and for the year 2018. This year was chosen because it overlaps the reference data and is sure to be in the middle of data used for analysis.</p>
+<p>Users should consider the options below and decide a source of reference data that matches the time period and geographic extent of your study region. Here, the process is demonstrated for Colombia and for the year 2018.</p>
+<p><strong>Important Note:</strong> We suggest users starting first with QuickMap Services, as it does not require an external account and is the most straightforward to install. Use of Planet and Google Earth Engine provides more flexible reference data, however the plugins are experimental and require accounts with both Earth Engine and Planet. If users cannot install any plugins, we suggest they switch to <a class="reference internal" href="Tenneson_TrainingData_GEE.html"><span class="doc">Module 1.2.2 Training Data Collection Using Google Earth Engine</span></a>.</p>
 <div class="section" id="quickmap-services">
 <h4>3.3.1 QuickMap Services<a class="headerlink" href="#quickmap-services" title="Permalink to this headline">¶</a></h4>
 <p><br /><br /><strong>Who</strong>: <a class="reference external" href="https://nextgis.com/">NextGIS</a></p>
@@ -118,7 +121,7 @@
 <ol class="simple">
 <li><p>Add the QuickMap Services plugin by going to <em>Plugins</em> and <em>Manage and Install Plugins…</em> and searching <em>QuickMapServices</em> and clicking the <em>Install Plugin</em> button.</p></li>
 <li><p>Open the QMS search panel by going to the <em>Web</em> toolbar -&gt; <em>QuickMapServices</em> -&gt;  <em>Search QGMS Panel</em>.</p></li>
-<li><p>In the panel that appears on the right of the screen, search for ‘Satellite’ and choose a dataset by selecting <em>Add</em>. The basemap will be added to the map.</p></li>
+<li><p>In the panel that appears on the right of the screen, search for ‘Satellite’ and choose a dataset by selecting <em>Add</em>. The basemap will be added to the map. In this example, the ‘ESRI Satellite’ layer was selected. You can navigate the map using your mouse, and zoom in and out with the mouse scroll bar.</p></li>
 </ol>
 <p><img alt="_images/quickservice.JPG" src="_images/quickservice.JPG" /></p>
 </div>
@@ -132,7 +135,7 @@
 <ol class="simple">
 <li><p>Detailed instructions for installing the plugin can be found <a class="reference external" href="https://developers.planet.com/docs/integrations/qgis/quickstart/">on the Planet webpage</a>.</p></li>
 <li><p>Add the plugin panel by going to <em>Web</em> -&gt; <em>Planet Explorer</em> -&gt; <em>Planet Explorer</em>.</p></li>
-<li><p>Select <em>Mosaic Series</em> in the plugin panel.</p></li>
+<li><p>Select <em>Mosaic Series</em> in the plugin panel next to the Planet icon.</p></li>
 <li><p>Double click on one of the biannual or monthly mosaics to add it to the map.</p></li>
 </ol>
 <p><img alt="_images/planetexplorer.JPG" src="_images/planetexplorer.JPG" /></p>
@@ -145,7 +148,7 @@
 <p>Google Earth Engine (GEE) is a cloud platform for analyzing geospatial data. Access to GEE is provided through a Javascript and Python API. While Google does not currently provide a QGIS plugin, recently Gennadii Donchyts released a beta plugin based on the Python API. This plugin allows for the incredible processing power and data storage of GEE with the user interface of QGIS. However it is also experimental and users should consult the <a class="reference external" href="https://github.com/gee-community/qgis-earthengine-plugin">Github repository</a> prior to use.</p>
 <p><strong>To use</strong>:</p>
 <ol class="simple">
-<li><p>Install the plugin using with the <a class="reference external" href="https://gee-community.github.io/qgis-earthengine-plugin/">User Guide</a>.</p></li>
+<li><p>Install the plugin using the <a class="reference external" href="https://gee-community.github.io/qgis-earthengine-plugin/">User Guide</a>.</p></li>
 <li><p>Add the Python console by going to <em>Plugins</em> -&gt; <em>Python Console</em></p></li>
 <li><p>Browse example code in <a class="reference external" href="https://github.com/gee-community/qgis-earthengine-plugin/tree/master/examples">the plugin repository</a>. It’s also worth getting familiar with <a class="reference external" href="https://developers.google.com/earth-engine/guides">Google Earth Engine</a> if you are a new user. This tutorial does not cover GEE basics and users should consult <a class="reference external" href="https://developers.google.com/earth-engine/guides">GEE documentation</a> for advanced usage.</p></li>
 <li><p>In the Python Console, make sure Earth Engine is installed correctly with the following code:</p></li>
@@ -165,7 +168,7 @@
 <ol class="simple">
 <li><p>Set the map view to the boundary of Colombia.</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">countries</span> <span class="o">=</span> <span class="n">ee</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="s2">&quot;USDOS/LSIB_SIMPLE/2017&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">countries</span> <span class="o">=</span> <span class="n">ee</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="s2">&quot;USDOS/LSIB_SIMPLE/2017&quot;</span><span class="p">)</span>
 <span class="n">colombia</span> <span class="o">=</span> <span class="n">countries</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">ee</span><span class="o">.</span><span class="n">Filter</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s1">&#39;country_na&#39;</span><span class="p">,</span> <span class="s1">&#39;Colombia&#39;</span><span class="p">))</span>
 <span class="n">Map</span><span class="o">.</span><span class="n">centerObject</span><span class="p">(</span><span class="n">colombia</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 </pre></div>
@@ -208,14 +211,14 @@
 <p>Once you have decided on reference imagery then it is time to start collecting training data. Going class by class, navigate your study region collecting point data. Here are a few considerations:</p>
 <ul class="simple">
 <li><p>Training data should be representative of your entire study region. This means that collecting more data across the study area is better than a few large training areas.</p></li>
-<li><p>Be sure to include examples on the edge of class boundaries, as these areas will be most challenging to distinguish in the classification stage.</p></li>
+<li><p>Be sure to include examples on the edge of class boundaries (for example, the forest immediately adjacent to a non-forest land cover), as these areas will be most challenging to distinguish in the classification stage.</p></li>
 <li><p>There is no magic number for an adequant number of training points. Be prepared for this to be an interative process in which you collect training data, perform your analysis, and then collect more training data to address misclassification errors.</p></li>
 <li><p>Take your time - this dataset will be invaluable to your research and can be to others as well.</p></li>
 </ul>
 <ol class="simple">
 <li><p>Select the training data layer in the <em>Layers</em> panel.</p></li>
-<li><p>Enable layer editing by selecting the button that looks like a pencil, <em>Toggle Editing</em>
-<img alt="_images/toggle.JPG" src="_images/toggle.JPG" /></p></li>
+<li><p>Enable layer editing by selecting the button that looks like a pencil, <em>Toggle Editing</em> <img alt="_images/toggle.JPG" src="_images/toggle.JPG" />.</p></li>
+<li><p>Select the <em>Add Point Feature</em> icon <img alt="_images/addpoint.JPG" src="_images/addpoint.JPG" />.</p></li>
 <li><p>Define a numeric class code. Here, we will use the following code:</p></li>
 </ol>
 <ul class="simple">
@@ -239,7 +242,7 @@
 <p>Once you have collected training data for each class, it helps to style them to see the distribution across the study area. Ideally, you want to have training points that are representative of the variability in the classes. Here, that means that we want to have enough forest, water, herbaceous, and developed points to ensure they fully represent these classes across Colombia.</p>
 <ol class="simple">
 <li><p>Right class on the layer in the <em>Layer</em> panel and select <em>Properties</em></p></li>
-<li><p>On the left side of the <em>Properties</em> panel, select <em>Control feature symbology</em>
+<li><p>On the left side of the <em>Properties</em> panel, select <em>Symbology</em>
 <img alt="Control feature symbology" src="_images/symbology.JPG" /></p></li>
 <li><p>Select <em>Categorized</em> for the symbol type.</p></li>
 <li><p>Under <em>Value</em> select the attribute containing the class label, in this case it is <em>class</em></p></li>
@@ -263,6 +266,7 @@
 <li><p>Under <em>Output field name</em> write ‘ID’.</p></li>
 <li><p>Double click on the selector ‘row_number’. Your panel should look like this:
 <img alt="_images/id.JPG" src="_images/id.JPG" /></p></li>
+<li><p>Click ‘Ok’ and finish editing using the ‘Toggle editing mode’ button <img alt="_images/toggle.JPG" src="_images/toggle.JPG" />.</p></li>
 </ol>
 </div>
 </div>
@@ -278,6 +282,8 @@
 <p>There is no magic number for the number of training points for each class. It is generally recommended to use an iterative process, in which additional training data is added after performing a classification, then the classification is created again the process repeats until the results are deemed adequate.</p>
 <p><strong>Can training data be split to use part for validation?</strong></p>
 <p>If the training data were collected opportunistically, or in other words <em>not</em> using a probability sample, then it is generally not recommended to use it for validation since it will introduce bias.</p>
+<p><strong>Why can’t I see my points on the map?</strong></p>
+<p>Make sure that the layer is loaded in your ‘Layers’ panel. If it is not, it can be added by navigating to <em>Layer</em> -&gt; <em>Add Layer</em> -&gt; <em>Add Vector Layer</em>. If it is in the ‘Layers’ panel but not appearing on the map, make sure that it is located above any reference data that is loaded.</p>
 </div>
 </div>
 
@@ -299,18 +305,18 @@
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="composite.html">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="image_composite_Web.html">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">1.2.1 Training Data Collection Using QGIS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gee.html">1.2.2 Training Data Collection Using Google Earth Engine</a></li>
-<li class="toctree-l1"><a class="reference internal" href="classification.html">1.3 Land Cover and Land Use Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tenneson_TrainingData_GEE.html">1.2.2 Training Data Collection Using Google Earth Engine”</a></li>
+<li class="toctree-l1"><a class="reference internal" href="classification_WBproject_REK_v3.html">1.3 Land Cover and Land Use Classification</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="composite.html" title="previous chapter">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
-      <li>Next: <a href="gee.html" title="next chapter">1.2.2 Training Data Collection Using Google Earth Engine</a></li>
+      <li>Previous: <a href="image_composite_Web.html" title="previous chapter">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+      <li>Next: <a href="Tenneson_TrainingData_GEE.html" title="next chapter">1.2.2 Training Data Collection Using Google Earth Engine”</a></li>
   </ul></li>
 </ul>
 </div>

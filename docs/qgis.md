@@ -9,7 +9,9 @@ This tutorial will demonstrate how to collect categorical training data for land
 
 ### 1.1 QGIS
 
-Quantum GIS (QGIS) is an open source GIS that runs on Windows, Linux, and Mac OS X. Users should consult the [QGIS webpage](https://qgis.org/en/site/forusers/alldownloads.html) for background information and installation instructions. This tutorial is based on the longterm release [Version 3.10.10](https://docs.qgis.org/3.10/en/docs/user_manual/). For the core features of this tutorial, users will only need QGIS installed and an internet connection. 
+Quantum GIS (QGIS) is an open source GIS software that runs on Windows, Linux, and Mac OS X. Users should consult the [QGIS webpage](https://qgis.org/en/site/forusers/alldownloads.html) for background information and installation instructions. Since there are many different ways to install QGIS, depending on your operating system, installation instructions will not be detailed here. If users are not able to install QGIS we recommend switching to [Module 1.2.2 Training Data Collection Using Google Earth Engine](Tenneson_TrainingData_GEE.md). 
+
+This tutorial is based on the longterm release [Version 3.10.10](https://docs.qgis.org/3.10/en/docs/user_manual/). For the core features of this tutorial, users will only need QGIS installed and an internet connection. For use of all the plugins described in this tutorial, users will need accounts with [Google Earth Engine](https://signup.earthengine.google.com/#!/) and [Planet](https://www.planet.com/login/?mode=signup) 
 
 ## 2 Learning Objectives 
 
@@ -48,15 +50,17 @@ This tutorial will demonstrate how to create training data that are point geomet
 To start, we will need to define a new shapefile layer. 
 
 1. Select *Layer* -> *Create Layer* -> *New Shapefile Layer...*.
-2. Choose a filename to save your training data (in the example below I use the name 'training_data_colombia_v1.shp'
+2. Choose a filename to save your training data (in the example below I use the name 'training_data_colombia_v1.shp'. Choose a folder to save it in that you can easily access and remember. 
 3. For *Geometry type* choose *Point*. 
 4. Choose EPSG:4326 - WGS 84 for the projection. 
 5. Delete the 'id' field by selecting it in the *Fields List* and selecting *Remove Field*.
-6. Add a new field of type *Whole number* named 'class' by selecting *Add to fields list*.
+6. Add a new field of type *Whole number* named 'class' by selecting *Add to fields list*. The *Length* of the field corresponds to the number of characters you can input, and the *Precision* is the number of digits. Choose atleast 2 for the field length. Since the type is *Whole number* we do not need to worry about precision. 
 
 Your panel should look like this:
 
 ![](figures/m1.2/m1.2.1/new_shapefile.JPG)
+
+Click *Ok* and you should see that a new layer is added to the 'Layers' panel on the left of the screen. We will add to this layer in creating the training data. 
 
 ### 3.3 Load baselayers
 
@@ -69,7 +73,9 @@ Luckily, there are numerous sources of high resolution reference imagery availab
 
 The following plugins offer access to reference imagery. Each plugin works with QGIS Version 3.1.10. However, users of this tutorial should follow the instructions from the plugin creators to ensure proper installation. 
 
-Users should consider the options below and decide a source of reference data that matches the time period and geographic extent of your study region. Here, the process is demonstrated for Colombia and for the year 2018. This year was chosen because it overlaps the reference data and is sure to be in the middle of data used for analysis.  
+Users should consider the options below and decide a source of reference data that matches the time period and geographic extent of your study region. Here, the process is demonstrated for Colombia and for the year 2018.  
+
+**Important Note:** We suggest users starting first with QuickMap Services, as it does not require an external account and is the most straightforward to install. Use of Planet and Google Earth Engine provides more flexible reference data, however the plugins are experimental and require accounts with both Earth Engine and Planet. If users cannot install any plugins, we suggest they switch to [Module 1.2.2 Training Data Collection Using Google Earth Engine](Tenneson_TrainingData_GEE.md). 
 
 #### 3.3.1 QuickMap Services
  \
@@ -86,7 +92,7 @@ QuickMap Services is a service for accessing and sharing geospatial data. This p
 
 1. Add the QuickMap Services plugin by going to *Plugins* and *Manage and Install Plugins...* and searching *QuickMapServices* and clicking the *Install Plugin* button.
 2. Open the QMS search panel by going to the *Web* toolbar -> *QuickMapServices* ->  *Search QGMS Panel*.
-3. In the panel that appears on the right of the screen, search for 'Satellite' and choose a dataset by selecting *Add*. The basemap will be added to the map.  
+3. In the panel that appears on the right of the screen, search for 'Satellite' and choose a dataset by selecting *Add*. The basemap will be added to the map. In this example, the 'ESRI Satellite' layer was selected. You can navigate the map using your mouse, and zoom in and out with the mouse scroll bar.  
 
 ![](figures/m1.2/m1.2.1/quickservice.JPG)
 
@@ -105,7 +111,7 @@ The Planet constellation of satellites offer daily high-resolution imagery in 3-
 
 1. Detailed instructions for installing the plugin can be found [on the Planet webpage](https://developers.planet.com/docs/integrations/qgis/quickstart/). 
 2. Add the plugin panel by going to *Web* -> *Planet Explorer* -> *Planet Explorer*.
-3. Select *Mosaic Series* in the plugin panel. 
+3. Select *Mosaic Series* in the plugin panel next to the Planet icon. 
 4. Double click on one of the biannual or monthly mosaics to add it to the map. 
 
 ![](figures/m1.2/m1.2.1/planetexplorer.JPG)
@@ -123,7 +129,7 @@ Google Earth Engine (GEE) is a cloud platform for analyzing geospatial data. Acc
 
 **To use**:
 
-1. Install the plugin using with the [User Guide](https://gee-community.github.io/qgis-earthengine-plugin/).  
+1. Install the plugin using the [User Guide](https://gee-community.github.io/qgis-earthengine-plugin/).  
 2. Add the Python console by going to *Plugins* -> *Python Console*
 3. Browse example code in [the plugin repository](https://github.com/gee-community/qgis-earthengine-plugin/tree/master/examples). It's also worth getting familiar with [Google Earth Engine](https://developers.google.com/earth-engine/guides) if you are a new user. This tutorial does not cover GEE basics and users should consult [GEE documentation](https://developers.google.com/earth-engine/guides) for advanced usage. 
 4. In the Python Console, make sure Earth Engine is installed correctly with the following code:
@@ -144,7 +150,7 @@ from ee_plugin import Map
 6. Set the map view to the boundary of Colombia.
 
 ```
-countries = ee.FeatureCollection("USDOS/LSIB_SIMPLE/2017"
+countries = ee.FeatureCollection("USDOS/LSIB_SIMPLE/2017")
 colombia = countries.filter(ee.Filter.eq('country_na', 'Colombia'))
 Map.centerObject(colombia, 8)
 ```
@@ -187,13 +193,13 @@ Map.addLayer(s1_composite_masked, vis, 'Sentinel 2 2019 Masked')
 Once you have decided on reference imagery then it is time to start collecting training data. Going class by class, navigate your study region collecting point data. Here are a few considerations:
 
 - Training data should be representative of your entire study region. This means that collecting more data across the study area is better than a few large training areas.
-- Be sure to include examples on the edge of class boundaries, as these areas will be most challenging to distinguish in the classification stage. 
+- Be sure to include examples on the edge of class boundaries (for example, the forest immediately adjacent to a non-forest land cover), as these areas will be most challenging to distinguish in the classification stage. 
 - There is no magic number for an adequant number of training points. Be prepared for this to be an interative process in which you collect training data, perform your analysis, and then collect more training data to address misclassification errors. 
 - Take your time - this dataset will be invaluable to your research and can be to others as well. 
 
 1. Select the training data layer in the *Layers* panel.
-2. Enable layer editing by selecting the button that looks like a pencil, *Toggle Editing*
-![](figures/m1.2/m1.2.1/toggle.JPG)
+2. Enable layer editing by selecting the button that looks like a pencil, *Toggle Editing* ![](figures/m1.2/m1.2.1/toggle.JPG).
+3. Select the *Add Point Feature* icon ![](figures/m1.2/m1.2.1/addpoint.JPG).
 3. Define a numeric class code. Here, we will use the following code:
 - 1 Forest
 - 2 Water
@@ -213,7 +219,7 @@ Once you have decided on reference imagery then it is time to start collecting t
 Once you have collected training data for each class, it helps to style them to see the distribution across the study area. Ideally, you want to have training points that are representative of the variability in the classes. Here, that means that we want to have enough forest, water, herbaceous, and developed points to ensure they fully represent these classes across Colombia. 
 
 1. Right class on the layer in the *Layer* panel and select *Properties*
-2. On the left side of the *Properties* panel, select *Control feature symbology*
+2. On the left side of the *Properties* panel, select *Symbology*
 ![Control feature symbology](figures/m1.2/m1.2.1/symbology.JPG) 
 3. Select *Categorized* for the symbol type. 
 4. Under *Value* select the attribute containing the class label, in this case it is *class*
@@ -236,6 +242,7 @@ It is useful to have a unique identifier for each training point. This can be ad
 3. Under *Output field name* write 'ID'. 
 4. Double click on the selector 'row_number'. Your panel should look like this:
 ![](figures/m1.2/m1.2.1/id.JPG)
+5. Click 'Ok' and finish editing using the 'Toggle editing mode' button ![](figures/m1.2/m1.2.1/toggle.JPG). 
 
 ## 4. Frequently Asked Questions
 
@@ -261,3 +268,7 @@ There is no magic number for the number of training points for each class. It is
 **Can training data be split to use part for validation?**
 
 If the training data were collected opportunistically, or in other words *not* using a probability sample, then it is generally not recommended to use it for validation since it will introduce bias. 
+
+**Why can't I see my points on the map?**
+
+Make sure that the layer is loaded in your 'Layers' panel. If it is not, it can be added by navigating to *Layer* -> *Add Layer* -> *Add Vector Layer*. If it is in the 'Layers' panel but not appearing on the map, make sure that it is located above any reference data that is loaded. 

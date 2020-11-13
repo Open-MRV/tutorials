@@ -13,9 +13,9 @@ _________________________________
    :maxdepth: 1
    :titlesonly:
 
-   composite
+   image_composite_Web
    qgis
-   gee
-   classification
+   Tenneson_TrainingData_GEE
+   classification_WBproject_REK_v3
 
 
