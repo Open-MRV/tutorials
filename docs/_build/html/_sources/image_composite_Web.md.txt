@@ -38,7 +38,7 @@ The appeal of using Google Earth Engine (GEE) is that GEE contains multi-petabyt
 * [API reference](https://developers.google.com/earth-engine/apidocs)
 * [Community tutorials](https://developers.google.com/earth-engine/tutorials)
 
-<img src="figures/m1.1/GEEcodeEditor.png" alt="GEE Code Editor (Source: Google Earth Engine)" style="zoom:90%;" />
+<img src="_images/GEEcodeEditor.png" alt="GEE Code Editor (Source: Google Earth Engine)" style="zoom:90%;" />
 
 
 Additionally, for fundamentals of Remote Sensing, you may refer to [NASA ARSET's Fundamentals of Remote Sensing](https://appliedsciences.nasa.gov/join-mission/training/english/fundamentals-remote-sensing) training. This includes basics of satellite remote sensing, including satellite orbits, types, resolutions, sensors, and processing levels. It is on demand and anyone can take it (Available only in English).
@@ -56,7 +56,7 @@ Anyone can sign up for Google Earth Engine. GEE is free for non-commercial use. 
 
 The general workflow of the process for this tutorial is demonstrated below: 
 
-<img src="figures/m1.1/workflowSimple2.png" alt="General workflow of composite process in GEE" style="zoom:48%;" />
+<img src="_images/workflowSimple2.png" alt="General workflow of composite process in GEE" style="zoom:48%;" />
 
 
 
@@ -70,13 +70,13 @@ To start, we need to define our area of interest. We will use the [Large Scale I
 
 Search "USDOS" in the *Search* box of the code editor and click on "LSIB 2017: Large Scale International Boundary Polygons, Simplified".
 
-![](figures/m1.1/searchlisb.png)
+![](_images/searchlisb.png)
 
 
 
 A popup window will show the description, table schema (properties), and terms of use of this dataset.
 
-![](figures/m1.1/lisbGEE.png)
+![](_images/lisbGEE.png)
 
 Copy and past the code below to create a variable for this dataset.
 
@@ -99,7 +99,7 @@ Map.centerObject(country,5);
 Map.addLayer(country,{},'Colombia');
 ```
 
-![](figures/m1.1/colombiaGEE2.png)
+![](_images/colombiaGEE2.png)
 
 > NOTE: Adjust the zoom level to your preference by changing the number `5` to any number between 1 and 24. The higher the number, the more zoomed in the map. You can use the slider under the *Layers* panel on the map to change the opacity of the layer.
 
@@ -137,7 +137,7 @@ Print `l8Filt` to see your filtered collection. Click *Run* after adding the lin
 print('L8 SR collection filtered',l8Filt);
 ```
 
-<img src="figures/m1.1/printL8.png" style="zoom:35%;" />
+<img src="_images/printL8.png" style="zoom:35%;" />
 
 With your filtered collection, create a composite using a median filter. We will use the `median()` function for `ee.ImageCollection` and the `clip()` function to clip the composite to the area of interest. Copy and paste the code below and click *Run*. The output will be an `ee.Image`.
 
@@ -152,7 +152,7 @@ print('L8 composite 2019',composite);
 
 > NOTE: The `median()` function for `ee.ImageCollection` is what is called in GEE a `ee.Reducer`, we are using specifically the `ee.Reducer.median()` reducer. Reducers are the GEE way to aggregate data over time, space, bands, arrays, and other data structures. The figure below demonstrates an image collection to an individual image:
 >
-> <img src="figures/m1.1/Reduce_ImageCollection.png" alt="Source: Google Earth Engine Developers" style="zoom:80%;" />
+> <img src="_images/Reduce_ImageCollection.png" alt="Source: Google Earth Engine Developers" style="zoom:80%;" />
 >
 > For more information about Reducers, and reducing an Image Collection specifically, please check these pages:
 >
@@ -170,13 +170,13 @@ print('L8 composite 2019',composite);
 > * Min and max: sets the stretch range of the colors. The range is dependent on the data type. For example unsigned 16-bit imagery has a total range of 0 to 65,536. This option lets you set the display to a subset of that range. In this case, we set min as 300 and max as 3000 and these correspond to the surface reflectance values.
 > * Palette: specifies the color palette used to display information. Not used in this case.
 >
-> You can test visualization parameters by clicking on gear icon <img src="figures/m1.1/gear.png" style="zoom:25%;" /> next to the layer "Composite 2019" and playing with the stretch options.
+> You can test visualization parameters by clicking on gear icon <img src="_images/gear.png" style="zoom:25%;" /> next to the layer "Composite 2019" and playing with the stretch options.
 >
-> <img src="figures/m1.1/visParams.png" style="zoom:40%;" />
+> <img src="_images/visParams.png" style="zoom:40%;" />
 
 
 
-![](figures/m1.1/l8cloudycomposite.png)
+![](_images/l8cloudycomposite.png)
 
 
 
@@ -199,11 +199,11 @@ print('L8 composite 2019 pre cloud filter',composite2);
 
 You will see that this new composite looks slightly better than the previous one but still very cloudy. In the Console, also note that the new collection has 454 images compared to 956 in the previous not-cloud-filtered one.
 
-![](figures/m1.1/l8cloudycompositev2.png)
+![](_images/l8cloudycompositev2.png)
 
 Try adjusting the `CLOUD_COVER` threshold to different percentages and checking results. Example: with 20% set as the threshold, you can see that many parts of the country have image gaps. Additionally, some tiles, even with a cloud filter, still present large area cover of clouds.
 
-<img src="figures/m1.1/l820cloudthreshold.png" style="zoom:25%;" />
+<img src="_images/l820cloudthreshold.png" style="zoom:25%;" />
 
 This is due to persistent cloud cover in some regions of Colombia. We can apply a Cloud Mask to improve the results. The Landsat 8 collections contains a ["Quality Assessment (QA)" band](https://www.usgs.gov/core-science-systems/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con) called `pixel_qa` that provides useful information of certain conditions within the data, and allows users to apply per pixel filters. Each pixel in the QA band contains unsigned integers that represent bit-packed combinations of surface, atmospheric, and sensor conditions. Of particular interest here, are Bits 3 and 5 that represent cloud shadow, and cloud, respectively. 
 
@@ -238,7 +238,7 @@ Map.addLayer(l8compositeMasked,
              'L8 composite 2019 masked');
 ```
 
-<img src="figures/m1.1/l8masked.png" style="zoom:25%;" />
+<img src="_images/l8masked.png" style="zoom:25%;" />
 
 The resulting composite shows masked clouds and is a great improvement compared to previous composites. However, data gaps are still an issue. Luckily, the [Landsat collection spans different missions](https://www.usgs.gov/core-science-systems/nli/landsat/landsat-satellite-missions?qt-science_support_page_related_con=2#qt-science_support_page_related_con), which have continuously acquired uninterrupted data since 1972 at different acquisition dates. Next, we will try incorporating Landsat 7 images from the same time period to fill these gaps.
 
@@ -290,11 +290,11 @@ Map.addLayer(l7compositeMasked,{bands:['B3','B2','B1'],min:0,
 
 > NOTE: We used `bands:['B3','B2','B1']` this time because Landsat 7 has different band designations. The sensors aboard each of the Landsat satellites were designed to acquire data in different ranges of frequencies along the electromagnetic spectrum. Whereas for Landsat 8 the red, green, and blue bands are B4, B3, and B2, respectively, for Landsat 7, these same bands are B3, B2, and B1, respectively. For more information refer to [this page](https://www.usgs.gov/faqs/what-are-band-designations-landsat-satellites?qt-news_science_products=0#qt-news_science_products).
 
-![](figures/m1.1/l7composite.png)
+![](_images/l7composite.png)
 
 You should see an image with many gaps like the one above. The Landsat 7 was launched in 1999 but since 2003, the sensor has acquired and delivered data with data gaps caused by the Scan Line Corrector (SLC) failure. Without an operating SLC, the sensor’s line of sight traces a zig-zag pattern along the satellite ground track, and, as a result, the imaged area is duplicated. When the Level-1 data are processed, the duplicated areas are removed, leaving data gaps. For more information about Landsat 7 and SLC error, please refer to [this page](https://www.usgs.gov/core-science-systems/nli/landsat/landsat-7?qt-science_support_page_related_con=0#qt-science_support_page_related_con).
 
-<img src="figures/m1.1/SLC.jpg" alt="Scan Line Corrector (SLC) error. (Source: USGS)" style="zoom:90%;" />
+<img src="_images/SLC.jpg" alt="Scan Line Corrector (SLC) error. (Source: USGS)" style="zoom:90%;" />
 
 
 
@@ -321,7 +321,7 @@ print('L7 SR collection renamed',l7FiltMaskedRenamed);
 
 > NOTE: If you check the bands of the first images of both `l7FiltMasked` and `l7FiltMaskedRenamed` collections you will see that the band names got renamed, and not all bands got copied over (`sr_atmos_opacity`, `sr_cloud_qa`, `pixel_qa`,  `radsat_qa`, and `B6`). To copy these additional bands, simply add them to the rename function (for `B6` you will need to rename it so it does not have the same name as the new Band 5). The image below shows the bands of the first image of the Landsat 7 collection on the left, and the bands of the first image of the renamed Landsat 7 collection on the right.
 >
-> ![](figures/m1.1/rename2.png)
+> ![](_images/rename2.png)
 
 Now we merge both collections. We will use the `merge` function for `imageCollection`. Copy and paste the code below and click *Run*. You will see in the Console that now you have a collection with 999 images (563 from Landsat 8 and 436 from Landsat 7).
 
@@ -331,7 +331,7 @@ var l78 = l7FiltMaskedRenamed.merge(l8FiltMasked);
 print('Merged collections',l78);
 ```
 
-<img src="figures/m1.1/mergedCollection.png" style="zoom:35%;" />
+<img src="_images/mergedCollection.png" style="zoom:35%;" />
 
 Now, to create the composite, we do the same as before. Note that if you run the code below you will run into an error:
 
@@ -342,7 +342,7 @@ Map.addLayer(l78composite,{bands:['B4','B3','B2'],min:0,max:2000},
              'Landsat 7 and 8 composite');
 ```
 
-<img src="figures/m1.1/tileError2.png" style="zoom:40%;" />
+<img src="_images/tileError2.png" style="zoom:40%;" />
 
 This is because the Landsat 7 collection has 6 bands and the Landsat 8 has 12 bands. To be mosaicked and added to the map, they need to have the same number of bands. We will modify the code block that we are merging both collections to add a `select` function to the Landsat 8 collection. The `select` function will select specific bands from the images. We will select only the bands available in the Landsat 7 collection. Therefore, change the merging procedure to:
 
@@ -360,11 +360,11 @@ Map.addLayer(l78composite,{bands:['B4','B3','B2'],min:0,max:2000},
 
 You should see an image composite that looks like this:
 
-<img src="figures/m1.1/mergedComposite.png" style="zoom:25%;" />
+<img src="_images/mergedComposite.png" style="zoom:25%;" />
 
 Compared to the previous Landsat 8-only composite, you can see that some of the gaps have been filled. However, due to the general mosaicking/compositing nature, and Landsat 7's  SLC error, you can also see some artifacts in some regions:
 
-<img src="figures/m1.1/l8andMergedComparison.png" alt="Comparison Landsat 8-only composite (left) and Landsat 7 and 8 composite (right) for 2019. Artifacts are demonstrated for both composites at centroid Latitude: 1.46, Longitude: -69.99" style="zoom:80%;" />
+<img src="_images/l8andMergedComparison.png" alt="Comparison Landsat 8-only composite (left) and Landsat 7 and 8 composite (right) for 2019. Artifacts are demonstrated for both composites at centroid Latitude: 1.46, Longitude: -69.99" style="zoom:80%;" />
 
 
 #### 4.2.4 Trying to fill gaps with Focal Mean (or median) functions
@@ -373,7 +373,7 @@ We can try filling gaps using a focal mean or focal median function to the image
 
 > NOTE: The `focal_mean` function contains 5 input arguments: `radius`, `kernelType`, `units`, `iterations`, and `kernel`. You can find information about each of them by searching focal mean in the *Docs* tab (and about any GEE function). For this example we defined a radius of 1.5, a square kernel type, pixel kernel, and 2 iterations. You can test with different variables. The larger these values the greater the blurring on the data.
 >
-> ![](figures/m1.1/focalMeanDocs.png)
+> ![](_images/focalMeanDocs.png)
 
 ```javascript
 // Function to fill gaps from SLC error using focal mean 
@@ -394,7 +394,7 @@ Map.addLayer(l78compositeFill,{bands:['B4','B3','B2'],min:0,
 
 You should see a composite like the one below. In this particular case, it might be worth not applying this method since it "created" new pixels that look like clouds and the previous method does a better job. However, for other regions, with less cloud cover, it might be of use.
 
-<img src="figures/m1.1/focalMean.png" style="zoom:25%;" />
+<img src="_images/focalMean.png" style="zoom:25%;" />
 
 #### 4.2.5 Medoid Composite
 
@@ -418,13 +418,13 @@ var l78medoidComposite = l78.map(function(image) {
 Map.addLayer(l78medoidComposite,{bands:['B4','B3','B2'],min:0,max:2000},'L7&8 Medoid composite 2019');
 ```
 
-<img src="figures/m1.1/LandsatMedoid.png" style="zoom:50%;" />
+<img src="_images/LandsatMedoid.png" style="zoom:50%;" />
 
 
 
 You should see an image like the one above. At first sight, you might think there is not much of a difference comparing with the median composite. However, the medoid composite can show significant improvements for certain pixels. See the example below for point (2.86, -74.73)
 
-<img src="figures/m1.1/MedoidComparison.png" alt="Comparison of median (left) vs. medoid (right) composites at centroid Latitude: 2.86, Longitude: -74.73" style="zoom:60%;" />
+<img src="_images/MedoidComparison.png" alt="Comparison of median (left) vs. medoid (right) composites at centroid Latitude: 2.86, Longitude: -74.73" style="zoom:60%;" />
 
 Now, let's create a median composite with the European Space Agency (ESA) Copernicus Sentinel-2 dataset. Sentinel-2 is a wide-swath, high-resolution, multi-spectral imaging mission supporting Copernicus Land Monitoring studies, including the monitoring of vegetation, soil and water cover, as well as observation of inland waterways and coastal areas. 
 
@@ -484,7 +484,7 @@ Map.addLayer(s2composite,{bands:['B4','B3','B2'],min:0.02,max:0.3,
                           gamma:1.5},'Sentinel-2 2019 composite');
 ```
 
-<img src="figures/m1.1/s2composite.png" style="zoom:25%;" />
+<img src="_images/s2composite.png" style="zoom:25%;" />
 
 > Additional: You can try a different band combination to show the Sentinel-2 composite. Try the false color combination below using the SWIR 1, NIR, and Blue bands. This band combination is mostly used to monitor the health of crops because of how it uses short-wave and near-infrared. Both these bands are particularly good at highlighting dense vegetation which appears as dark green. [This page](https://gisgeography.com/sentinel-2-bands-combinations/) explains different Sentinel-2 band combinations.
 >
@@ -494,7 +494,7 @@ Map.addLayer(s2composite,{bands:['B4','B3','B2'],min:0.02,max:0.3,
 >              'Sentinel-2 2019 composite SWIR/NIR/Blue');
 > ```
 >
-> <img src="figures/m1.1/s2compositeFalseColor.png" style="zoom:25%;" />
+> <img src="_images/s2compositeFalseColor.png" style="zoom:25%;" />
 
 #### Warning: Surface Reflectance vs. Top-of-Atmosphere products
 
@@ -502,7 +502,7 @@ The European Space Agency did not produce Sentinel-2 Level-2 data (Bottom-of-Atm
 
 The Top-of-Atmosphere products have not been atmospherically corrected, therefore, a TOA composite will present differences compared to a BOA since it will represent influences from the atmosphere. An image of the 2019 median composite from Sentinel-2 L1 product is shown below together with the produced 2019 median composite from the L2 product for comparison.
 
-<img src="figures/m1.1/TOA_BOAComparison.png" style="zoom:70%;" />
+<img src="_images/TOA_BOAComparison.png" style="zoom:70%;" />
 
 You can notice the blueish effect on the TOA composite.
 
@@ -526,7 +526,7 @@ Export.image.toDrive({
 });
 ```
 
-![](figures/m1.1/taskProcess.png)
+![](_images/taskProcess.png)
 
 > NOTE: In this example you have specified a few of the optional arguments recognized by `Export.image`. Though this function takes several optional parameters, it is valuable to familiarize yourself with these:
 >
@@ -537,13 +537,13 @@ Export.image.toDrive({
 >
 > NOTE 2: If you try to export an image that contains bands with different data types, you will see an error. All bands of a Sentinel-2 image are `unsigned int16`, therefore, you won't run into an error. However, for Landsat images, you will need to select specific bands by using the `select` function or cast bands to the same data type since data types vary for different bands (See below). We won't run into this problem since our Landsat combined composite only contains bands B2-7 that were selected previously, but for separate Landsat collections, you should apply the `select` function.
 >
-> <img src="figures/m1.1/landsatDataType.png" style="zoom:40%;" />
+> <img src="_images/landsatDataType.png" style="zoom:40%;" />
 
 Because we are exporting a composite for the entire country of Colombia, your export will take several minutes, perhaps hours. Once completed, you will notice that in the folder you specified, the composite you be broken down into separate GeoTiff files. E.g.:  l78composite2019-0000000000-0000000000.tif, l78composite2019-0000000000-000000xxxx.tif (with xxxx being different numbers), and so on.
 
-> NOTE: to check the status of a task, hover the mouse over the export and click the <img src="figures/m1.1/question.png" style="zoom:48%;" /> icon. A window will appear showing the details:
+> NOTE: to check the status of a task, hover the mouse over the export and click the <img src="_images/question.png" style="zoom:48%;" /> icon. A window will appear showing the details:
 >
-> ![](figures/m1.1/taskDetails2.png)
+> ![](_images/taskDetails2.png)
 >
 > NOTE 2: For Sentinel-2, the pixel resolution is 10 meters and when exporting large images (like a composite for the entire country of Colombia) you might run into an export issue. If you ran into a size issue, increase the `scale`, or try to modify the `maxPixels`, or change the `region` to a smaller geometry. This is valid for all types of `Export` functions.
 
