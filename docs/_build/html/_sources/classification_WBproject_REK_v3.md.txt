@@ -304,7 +304,7 @@ In the plains of the northeast of the country, herbaceous classification is inte
 
 When working with passive optical data, cloudiness is a common problem in many parts of the world.  Options to improve image availability include:
 
-######## 3.7.1.1 Adjust thresholds for masking cloudy images
+###### 3.7.1.1 Adjust thresholds for masking cloudy images
 In our examples thus far, we have filtered out individual Landsat images with greater than 50% of the area clouded, according to image metadata.  This filtering occurred in our image compositing step:  `.filterMetadata('CLOUD_COVER', 'less_than', 50)`.  This filters out entire Landsat image acquisitions, even if some of the pixels in those images may be useful. 
 
 - While it is often advisable to be conservative when filtering clouds, if it leads to large gaps in imagery as observed here, it is worth omitting the filter at the scale of whole images, and instead rely on per-pixel filtering captured in the function called using `.map(maskL8srClouds)`. 
@@ -319,7 +319,7 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 
 This substantially improves the situation, but does not entirely solve it. 
 
-######## 3.7.1.2 Expand the mosaic to include more years of data  
+###### 3.7.1.2 Expand the mosaic to include more years of data  
 
 - Land cover maps are associated with the year in which imagery was acquired. In the examples thus far, we have focused on imagery from the year 2019. Training data points were also acquired in the year 2019 for this exercise. 
 
@@ -379,7 +379,7 @@ Similarly, a close evaluation of the plains in the east-northeast of the country
 
 ![Overclassification of the "developed" class near the Meta River in Northeastern Colombia. Colors and interpretation as in prior figure](./figures/m1.3/figure_overclass_developed_plains.png)
 
-######## 3.7.2.1. Options for handling misclassification errors
+###### 3.7.2.1. Options for handling misclassification errors
 
 To understand how to fix misclassification, one must have an appreciation of the cause: Misclassification occurs when a pixel of one class lands in the spectral data space that the classifier has assigned to a different class. 
 

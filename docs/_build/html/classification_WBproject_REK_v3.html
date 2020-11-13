@@ -339,8 +339,10 @@ In the plains of the northeast of the country, herbaceous classification is inte
 <div class="section" id="options-for-cloud-masking-issues">
 <h4>3.7.1 Options for cloud masking issues<a class="headerlink" href="#options-for-cloud-masking-issues" title="Permalink to this headline">¶</a></h4>
 <p>When working with passive optical data, cloudiness is a common problem in many parts of the world.  Options to improve image availability include:</p>
-<p>######## 3.7.1.1 Adjust thresholds for masking cloudy images
-In our examples thus far, we have filtered out individual Landsat images with greater than 50% of the area clouded, according to image metadata.  This filtering occurred in our image compositing step:  <code class="docutils literal notranslate"><span class="pre">.filterMetadata('CLOUD_COVER',</span> <span class="pre">'less_than',</span> <span class="pre">50)</span></code>.  This filters out entire Landsat image acquisitions, even if some of the pixels in those images may be useful.</p>
+</div>
+<div class="section" id="adjust-thresholds-for-masking-cloudy-images">
+<h4>3.7.1.1 Adjust thresholds for masking cloudy images<a class="headerlink" href="#adjust-thresholds-for-masking-cloudy-images" title="Permalink to this headline">¶</a></h4>
+<p>In our examples thus far, we have filtered out individual Landsat images with greater than 50% of the area clouded, according to image metadata.  This filtering occurred in our image compositing step:  <code class="docutils literal notranslate"><span class="pre">.filterMetadata('CLOUD_COVER',</span> <span class="pre">'less_than',</span> <span class="pre">50)</span></code>.  This filters out entire Landsat image acquisitions, even if some of the pixels in those images may be useful.</p>
 <ul class="simple">
 <li><p>While it is often advisable to be conservative when filtering clouds, if it leads to large gaps in imagery as observed here, it is worth omitting the filter at the scale of whole images, and instead rely on per-pixel filtering captured in the function called using <code class="docutils literal notranslate"><span class="pre">.map(maskL8srClouds)</span></code>.</p></li>
 <li><p>For the purpose of example, the entire workflow is recreated in the <code class="docutils literal notranslate"><span class="pre">cls_landsat_v1</span></code> script in the section labeled 3.7</p></li>
@@ -348,7 +350,9 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 </ul>
 <p><img alt="Image of classification without 50% cloud cover threshold" src="_images/CART_image_after_removing_image_cloud_filter.png" /></p>
 <p>This substantially improves the situation, but does not entirely solve it.</p>
-<p>######## 3.7.1.2 Expand the mosaic to include more years of data</p>
+</div>
+<div class="section" id="expand-the-mosaic-to-include-more-years-of-data">
+<h4>3.7.1.2 Expand the mosaic to include more years of data<a class="headerlink" href="#expand-the-mosaic-to-include-more-years-of-data" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p>Land cover maps are associated with the year in which imagery was acquired. In the examples thus far, we have focused on imagery from the year 2019. Training data points were also acquired in the year 2019 for this exercise.</p></li>
 <li><p>While constraining both imagery and training data to a single year is laudable, maps with missing values are problematic.  Depending on the intended use of the map, an option to improve the coverage of the map may be to expand the number of years of available for the image compositing.</p></li>
@@ -394,7 +398,9 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 <p><img alt="The false-color image (SWIR band in red, NIR band in green, red band in blue) on the left shows areas of sparse herbaceous vegetation with substantial soil or sand visible as well. These bright areas occupy a similar portion of the spectral space as the developed class, resulting in a classification with an abundance of labels of developed." src="_images/figure_zoom_of_guajira.png" /></p>
 <p>Similarly, a close evaluation of the plains in the east-northeast of the country near the Meta River shows an overclassification of developed area, apparently caused by areas that are sparsely vegetated.</p>
 <p><img alt="Overclassification of the &quot;developed&quot; class near the Meta River in Northeastern Colombia. Colors and interpretation as in prior figure" src="_images/figure_overclass_developed_plains.png" /></p>
-<p>######## 3.7.2.1. Options for handling misclassification errors</p>
+</div>
+<div class="section" id="options-for-handling-misclassification-errors">
+<h4>3.7.2.1. Options for handling misclassification errors<a class="headerlink" href="#options-for-handling-misclassification-errors" title="Permalink to this headline">¶</a></h4>
 <p>To understand how to fix misclassification, one must have an appreciation of the cause: Misclassification occurs when a pixel of one class lands in the spectral data space that the classifier has assigned to a different class.</p>
 <p>Using the simple cartoon shown earlier for the CART classifier, we can envision at least two cases where this can occur.</p>
 <p>Case 1:  A new pixel is encountered that lands in the part of spectral space already occupied by members of a different class.  This situation can occur when the two classes do not have sufficient spectral differences to be separated, or when density of training points is sparse enough that such apparently different lobes of spectral space are not sufficiently bounded.</p>
