@@ -15,7 +15,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine" href="composite.html" />
+    <link rel="prev" title="1.2.2 Training Data Collection Using Google Earth Engine" href="gee.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -87,11 +87,27 @@
 </div>
 <div class="section" id="other-resources">
 <h3>2.3 Other Resources<a class="headerlink" href="#other-resources" title="Permalink to this headline">¶</a></h3>
-<p><strong>Concept</strong>|<strong>Source</strong>|<strong>Site</strong>
-:—:|:—:|——-:
-Basics of remote sensing|Natural Resources Canada|https://www.nrcan.gc.ca/maps-tools-publications/satellite-imagery-air-photos/tutorial-fundamentals-remote-sensing/9309
-Fundamentals of Remote Sensing|ARSET (NASA Applied Science)|https://appliedsciences.nasa.gov/join-mission/training/english/fundamentals-remote-sensing</p>
-</div>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"><strong>Concept</strong></th>
+<th align="center"><strong>Source</strong></th>
+<th align="right"><strong>Site</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Basics of remote sensing</td>
+<td align="center">Natural Resources Canada</td>
+<td align="right">https://www.nrcan.gc.ca/maps-tools-publications/satellite-imagery-air-photos/tutorial-fundamentals-remote-sensing/9309</td>
+</tr>
+<tr>
+<td align="center">Fundamentals of Remote Sensing</td>
+<td align="center">ARSET (NASA Applied Science)</td>
+<td align="right">https://appliedsciences.nasa.gov/join-mission/training/english/fundamentals-remote-sensing</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <div class="section" id="supervised-classification-in-google-earth-engine">
 <h2>3.0 Supervised Classification in Google Earth Engine<a class="headerlink" href="#supervised-classification-in-google-earth-engine" title="Permalink to this headline">¶</a></h2>
@@ -163,13 +179,32 @@ Classifier|CART|Current Module</p>
 <div><p>Terminology:  In GEE, datasets such as these training points are defined as a “FeatureCollection”.  For users familiar with the concepts of shapefiles or similar vector representations of geospatial data, the two are essentially the same. In GEE, vector data have a “geometry,” which contains the geographic position of the points, lines, and polygons of a vector object, as well as the attributes that record the information about those geometries. Taken together, these make up a single “Feature”, such as a single point or polygon.  Many of these together are considered a “FeatureCollection”.</p>
 </div></blockquote>
 <p>For reference, we defined the class codes and labels in the prior module as follows:</p>
-<p><strong>Class code</strong>|<strong>Class label</strong>
-:—–:|:—–:
-1|Forest
-2|Water
-3|Herbaceous
-4|Developed</p>
-<blockquote>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th align="center"><strong>Class code</strong></th>
+<th align="center"><strong>Class label</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">1</td>
+<td align="center">Forest</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">Water</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">Herbaceous</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">Developed</td>
+</tr>
+</tbody>
+</table><blockquote>
 <div><p><strong>Advanced usage:</strong>  For later interpretation, it is useful to color code these these classes.  See the code for an approach to color each interpreted point according to a color scheme defined using hexadecimal codes.</p>
 </div></blockquote>
 <p><img alt="The training points from Module 1.2.1 displayed in the code editor of GEE." src="_images/training_points_colombia.png" /></p>
@@ -464,6 +499,8 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="composite.html">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qgis.html">1.2.1 Training Data Collection Using QGIS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gee.html">1.2.2 Training Data Collection Using Google Earth Engine</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">1.3 Land Cover and Land Use Classification</a></li>
 </ul>
 
@@ -471,7 +508,7 @@ In our examples thus far, we have filtered out individual Landsat images with gr
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="composite.html" title="previous chapter">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+      <li>Previous: <a href="gee.html" title="previous chapter">1.2.2 Training Data Collection Using Google Earth Engine</a></li>
   </ul></li>
 </ul>
 </div>
