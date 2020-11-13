@@ -1,0 +1,597 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine &#8212; Open-MRV v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="1.2.1 Training Data Collection Using QGIS" href="qgis.html" />
+    <link rel="prev" title="Open-MRV Tutorials" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="image-mosaic-composite-creation-for-landsat-and-sentinel-2-in-google-earth-engine">
+<h1>1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine<a class="headerlink" href="#image-mosaic-composite-creation-for-landsat-and-sentinel-2-in-google-earth-engine" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="background">
+<h2>1 Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial will walk you through how to create a composite using Landsat and/or Sentinel-2 imagery on a national level in Google Earth Engine. Here, the process is demonstrated for the country of Colombia. The tutorial is accompanied by a Google Earth Engine repository that contains three scripts. These scripts enable you to create a composite that can be used in subsequent sections of this training.</p>
+<div class="section" id="repository">
+<h3>Repository<a class="headerlink" href="#repository" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://code.earthengine.google.com/?accept_repo=users/openmrv/MRV">This repository</a> contains a subfolder called “Composite” with three scripts that perform all the operations that you will learn in this tutorial:</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Image_Composite_Landsat_Sentinel2_Median</span></code> contains all the steps in the order you will go through (except for section 4.2.5. Medoid composite) for creating a median composites using Landsat and Sentinel-2 Collections.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Image_Composite_Landsat_Sentinel2_Median2</span></code> is an optimized version of the above script. It contains all user variables at the top and functions/code that do not need to be modified below.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Image_Composite_Landsat_Medoid</span></code> contains the compositing method using the Medoid instead of Median for the Landsat Collections.</p></li>
+</ol>
+<blockquote>
+<div><p>NOTE: it is encouraged that you follow the steps below by writing the scripts on your own to have a better learning experience, and only use the above scripts for consultation during the tutorial, or after the understanding of all the processes here explained.</p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="learning-objectives">
+<h2>2 Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Learn how to create an image mosaic/composite</p></li>
+<li><p>Become familiar with a variety of options that include: selecting dates, sensors, and mosaicking methods</p></li>
+<li><p>Create a cloud-free mosaic/composite for Colombia for 2019</p></li>
+<li><p>Learn how to export the mosaic/composite</p></li>
+</ul>
+</div>
+<div class="section" id="google-earth-engine">
+<h2>3 Google Earth Engine<a class="headerlink" href="#google-earth-engine" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>3.1 Background<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The appeal of using Google Earth Engine (GEE) is that GEE contains multi-petabytes of satellite imagery and geospatial datasets allowing users to compute massive-scale analysis in the cloud-based platform. GEE contains a JavaScript (used in this case) and a Python API, where users can upload their own datasets and use built-in functions  to accomplish a myriad of remote sensing and geospatial tasks at unprecedented speeds and scales. For more information about GEE please refer to <a class="reference external" href="https://earthengine.google.com/">the main page about Google Earth Engine</a>. There you can find useful tutorials and documentation. Some relevant links are highlighted below:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/datasets/">Datasets available</a></p></li>
+<li><p><a class="reference external" href="https://earthengine.google.com/faq/">FAQs</a></p></li>
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/guides/getstarted">Getting started with GEE</a></p></li>
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/tutorials/tutorial_api_01">Introduction to the JavaScript API</a></p></li>
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine">Documentation</a></p></li>
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/apidocs">API reference</a></p></li>
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/tutorials">Community tutorials</a></p></li>
+</ul>
+<p><img alt="GEE Code Editor (Source: Google Earth Engine)" src="_images/GEEcodeEditor.png" />{ width=80% }</p>
+<p>Additionally, for fundamentals of Remote Sensing, you may refer to <a class="reference external" href="https://appliedsciences.nasa.gov/join-mission/training/english/fundamentals-remote-sensing">NASA ARSET’s Fundamentals of Remote Sensing</a> training. This includes basics of satellite remote sensing, including satellite orbits, types, resolutions, sensors, and processing levels. It is on demand and anyone can take it (Available only in English).</p>
+<p><em>Note</em>: <a class="reference external" href="https://www.google.com/chrome/">Google Chrome</a> is recommended when using GEE.</p>
+</div>
+<div class="section" id="how-to-sign-up">
+<h3>3.2 How to sign up<a class="headerlink" href="#how-to-sign-up" title="Permalink to this headline">¶</a></h3>
+<p>Anyone can sign up for Google Earth Engine. GEE is free for non-commercial use. To sign up, please fill out <a class="reference external" href="https://earthengine.google.com/signup/">this form</a>. Once you have been accepted, you will receive an email with additional information.</p>
+</div>
+</div>
+<div class="section" id="creating-a-composite">
+<h2>4 Creating a composite<a class="headerlink" href="#creating-a-composite" title="Permalink to this headline">¶</a></h2>
+<p>The general workflow of the process for this tutorial is demonstrated below:</p>
+<p><img alt="General workflow of composite process in GEE" src="_images/workflowSimple.png" />{ width=75% }</p>
+<p>Now let’s go through each of these steps. Open the code editor by typing <a class="reference external" href="https://code.earthengine.google.com">https://code.earthengine.google.com</a> in your web browser.</p>
+<div class="section" id="area-of-interest">
+<h3>4.1 Area of Interest<a class="headerlink" href="#area-of-interest" title="Permalink to this headline">¶</a></h3>
+<p>To start, we need to define our area of interest. We will use the <a class="reference external" href="https://developers.google.com/earth-engine/datasets/catalog/USDOS_LSIB_SIMPLE_2017">Large Scale International Boundary (2017) simplified dataset</a> by the United States Department of State (USDOS) which contains polygons for all countries of the world. Search “USDOS” in the <em>Search</em> box of the code editor and click on “LISB 2017: Large Scale International Boundary Polygons, Simplified”.</p>
+<p><img alt="_images/searchlisb.png" src="_images/searchlisb.png" /></p>
+<p>A popup window will show the description, table schema (properties), and terms of use of this dataset.</p>
+<p><img alt="_images/lisbGEE.png" src="_images/lisbGEE.png" /></p>
+<p>Copy and past the code below to create a variable for this dataset.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">lisb</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">FeatureCollection</span><span class="p">(</span><span class="s2">&quot;USDOS/LISB_SIMPLE/2017&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>NOTE: Alternatively, <strong>any</strong> GEE dataset can be added to your script by clicking the <em>IMPORT</em> button next to the dataset. The imported dataset will show up at the top of the code editor under <em>Imports</em> as a variable with a default name <code class="docutils literal notranslate"><span class="pre">image</span></code> for images, <code class="docutils literal notranslate"><span class="pre">imageCollection</span></code> for Image Collections, <code class="docutils literal notranslate"><span class="pre">geometry</span></code> for geometries, <code class="docutils literal notranslate"><span class="pre">table</span></code> for Feature Collections, and so on. You can change this name by clicking over the default name (in this case <code class="docutils literal notranslate"><span class="pre">table</span></code>) and writing the new name.</p>
+</div></blockquote>
+<p>Now, let’s filter this <code class="docutils literal notranslate"><span class="pre">FeatureCollection</span></code> to grab only the polygon for Colombia. We will do this by using the <code class="docutils literal notranslate"><span class="pre">filterMetadata</span></code> function in GEE. One of the LISB dataset’s properties is called <code class="docutils literal notranslate"><span class="pre">country_na</span></code> and it represents the name of country (US-recognized) for each polygon. Therefore, we will filter our variable <code class="docutils literal notranslate"><span class="pre">lisb</span></code> by <code class="docutils literal notranslate"><span class="pre">country_na</span></code> that are equal to “Colombia”. Copy and paste the code below to create a variable <code class="docutils literal notranslate"><span class="pre">country</span></code> for Colombia’s boundaries.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">country</span> <span class="o">=</span> <span class="nx">lisb</span><span class="p">.</span><span class="nx">filterMetadata</span><span class="p">(</span><span class="s1">&#39;country_na&#39;</span><span class="p">,</span><span class="s1">&#39;equals&#39;</span><span class="p">,</span><span class="s1">&#39;Colombia&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>To visualize this boundary, you can use the <code class="docutils literal notranslate"><span class="pre">Map.addLayer</span></code> function. But before, you should center the Map to this area of interest by using <code class="docutils literal notranslate"><span class="pre">Map.centerObject</span></code>. Copy and paste the code below to define the map center over Colombia and add the Colombia’s polygon <code class="docutils literal notranslate"><span class="pre">country</span></code> to the map. Click <em>Run</em> to see the results. You will see that under <em>Layers</em> you will have a layer named “Colombia”.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">Map</span><span class="p">.</span><span class="nx">center</span><span class="p">(</span><span class="nx">country</span><span class="p">,</span><span class="mi">5</span><span class="p">);</span>
+<span class="nx">Mad</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">country</span><span class="p">,{},</span><span class="s1">&#39;Colombia&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="_images/colombiaGEE2.png" src="_images/colombiaGEE2.png" /></p>
+<blockquote>
+<div><p>NOTE: Adjust the zoom level to your preference by changing the number <code class="docutils literal notranslate"><span class="pre">5</span></code> to any number between 1 and 24. You can use the slider under <em>Layers</em> on the map to change the opacity of the layer.</p>
+</div></blockquote>
+</div>
+<div class="section" id="landsat-collection">
+<h3>4.2 Landsat Collection<a class="headerlink" href="#landsat-collection" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="starting-with-landsat-8">
+<h4>4.2.1 Starting with Landsat 8<a class="headerlink" href="#starting-with-landsat-8" title="Permalink to this headline">¶</a></h4>
+<p>We will start creating a composite from the Landsat 8 collection. First, let’s define two time variables that we will call <code class="docutils literal notranslate"><span class="pre">startDate</span></code> and <code class="docutils literal notranslate"><span class="pre">endDate</span></code>. Here, we will create a composite for the year 2019, so use the code bock below to define the time variables. Date objects are by default in the <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span></code> format.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">startDate</span> <span class="o">=</span> <span class="s1">&#39;2019-01-01&#39;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">endDate</span> <span class="o">=</span> <span class="s1">&#39;2019-12-31&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Now, let’s define our Landsat 8 collection variable. We will use the <a class="reference external" href="https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR">USGS Landsat 8 Surface Reflectance Tier 1</a> product in GEE. This dataset is the atmospherically corrected surface reflectance from the Landsat 8 OLI/TIRS sensors. These images contains 5 visible and near-infrared (VNIR) bands and 2 short-wave infrared (SWIR) bands processed to orthorectified surface reflectance, and two thermal infrared (TIR) bands processed to orthorectified brightness temperature.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">l8</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">ImageCollection</span><span class="p">(</span><span class="s1">&#39;LANDSAT/LC08/C01/T1_SR&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>NOTE: If you try to <code class="docutils literal notranslate"><span class="pre">print</span></code> this collection, an error message will be returned in the Console. This collection contains the entire Landsat 8 archive from 2013 to the present day for the entire globe. Any print collection query will abort after accumulating the metadata for over 5,000 elements.</p>
+</div></blockquote>
+<p>Next, let’s filter this collection to our area of interest (Colombia, <code class="docutils literal notranslate"><span class="pre">var</span> <span class="pre">country</span></code>) and time period (<code class="docutils literal notranslate"><span class="pre">startDate,</span> <span class="pre">endDate</span></code>). We will use the <code class="docutils literal notranslate"><span class="pre">filterBounds</span></code> and <code class="docutils literal notranslate"><span class="pre">filterDate</span></code> functions.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">l8Filt</span> <span class="o">=</span> <span class="nx">l8</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+			   <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Print <code class="docutils literal notranslate"><span class="pre">l8Filt</span></code> to see your filtered collection. Click <em>Run</em> after adding the line below. The <em>Console</em> will show that the collection has 956 images.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">print</span><span class="p">(</span><span class="s1">&#39;L8 SR collection filtered&#39;</span><span class="p">,</span><span class="nx">l8Filt</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/printL8.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/printL8.png" />{ width=70% }</p>
+<p>With your filtered collection, create a composite using a median filter. We will use the <code class="docutils literal notranslate"><span class="pre">median()</span></code> function for <code class="docutils literal notranslate"><span class="pre">ee.ImageCollection</span></code> and the <code class="docutils literal notranslate"><span class="pre">clip()</span></code> function to clip the composite to the area of interest. Copy and paste the code below and click <em>Run</em>. The output will be an <code class="docutils literal notranslate"><span class="pre">ee.Image</span></code>.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">composite</span> <span class="o">=</span> <span class="nx">l8Filt</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span>
+
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">composite</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">300</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mi">3000</span><span class="p">},</span>
+             <span class="s1">&#39;Composite 2019&#39;</span><span class="p">);</span>
+
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;L8 composite 2019&#39;</span><span class="p">,</span><span class="nx">composite</span><span class="p">);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>NOTE: The <code class="docutils literal notranslate"><span class="pre">median()</span></code> function for <code class="docutils literal notranslate"><span class="pre">ee.ImageCollection</span></code> is what is called in GEE a <code class="docutils literal notranslate"><span class="pre">ee.Reducer</span></code>, we are using specifically the <code class="docutils literal notranslate"><span class="pre">ee.Reducer.median()</span></code> reducer. Reducers are the GEE way to aggregate data over time, space, bands, arrays, and other data structures. The figure below demonstrates an image collection to an individual image:</p>
+<p><img alt="Source: Google Earth Engine Developers" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/Reduce_ImageCollection.png" />{ width=25% }</p>
+<p>For more information about Reducers, and reducing an Image Collection specifically, please check these pages:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/guides/reducers_intro">Reducer Overview</a></p></li>
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/guides/reducers_image_collection">ImageCollection Reductions</a></p></li>
+<li><p><a class="reference external" href="https://developers.google.com/earth-engine/guides/ic_reducing">Reducing an ImageCollection</a></p></li>
+</ul>
+<p>Alternatively, you can test using mean, min, etc, as reducers instead of median.</p>
+<p>NOTE 2: There are a number of options available to adjust how images are displayed using the <code class="docutils literal notranslate"><span class="pre">Map.addLayer</span></code> function. The inputs that are most commonly used to modify display settings include the following:</p>
+<ul class="simple">
+<li><p>Bands: allows the user to specify which bands to render as red, green, and blue. In the case above we are using Landsat 8’s bands B4, B3, and B2 which correspond to red, green, and blue bands, respectively.</p></li>
+<li><p>Min and max: sets the stretch range of the colors. The range is dependent on the data type. For example unsigned 16-bit imagery has a total range of 0 to 65,536. This option lets you set the display to a subset of that range. In this case, we set min as 300 and max as 3000 and these correspond to the surface reflectance values.</p></li>
+<li><p>Palette: specifies the color palette used to display information. Not used in this case.</p></li>
+</ul>
+<p>You can test visualization parameters by clicking on gear icon <img alt="_images/gear.png" src="_images/gear.png" /> next to the layer “Composite 2019” and playing with the stretch options.</p>
+<p><img alt="_images/visParams.png" src="_images/visParams.png" />{ width=70% }</p>
+</div></blockquote>
+<p><img alt="_images/l8cloudycomposite.png" src="_images/l8cloudycomposite.png" /></p>
+<p>You should see a very cloudy image in the Map like the one above. Let’s try adding a pre filter for clouds when filtering our collection. The Landsat collection comes with a property named <code class="docutils literal notranslate"><span class="pre">CLOUD_COVER</span></code>, and we can define a cloud cover percentage as a threshold to filter the scenes. We will use the <code class="docutils literal notranslate"><span class="pre">filterMetadata</span></code> function to filter images with cloud cover of less than 50%. Copy and paste the code below and click <em>Run</em>.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">l8Filt2</span> <span class="o">=</span> <span class="nx">l8</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+               <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">)</span>
+               <span class="p">.</span><span class="nx">filterMetadata</span><span class="p">(</span><span class="s1">&#39;CLOUD_COVER&#39;</span><span class="p">,</span><span class="s1">&#39;less_than&#39;</span><span class="p">,</span><span class="mi">50</span><span class="p">);</span>
+
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;Landsat 8 SR collection filtered for clouds&#39;</span><span class="p">,</span><span class="nx">l8Filt2</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">composite2</span> <span class="o">=</span> <span class="nx">l8Filt2</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span>
+
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">composite2</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">300</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mi">3000</span><span class="p">},</span>
+             <span class="s1">&#39;Composite 2019 pre cloud filter&#39;</span><span class="p">);</span>
+
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;L8 composite 2019 pre cloud filter&#39;</span><span class="p">,</span><span class="nx">composite2</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>You will see that this new composite looks slightly better than the previous one but still very cloudy. In the Console, also note that the new collection has 454 images compared to 956 in the previous not-cloud-filtered one.</p>
+<p><img alt="_images/l8cloudycompositev2.png" src="_images/l8cloudycompositev2.png" /></p>
+<p>Try adjusting the <code class="docutils literal notranslate"><span class="pre">CLOUD_COVER</span></code> threshold to different percentages and checking results. Example: with 20% set as the threshold, you can see that many parts of the country have image gaps. Additionally, some tiles, even with a cloud filter, still present large area cover of clouds.</p>
+<p><img alt="_images/l820cloudthreshold.png" src="_images/l820cloudthreshold.png" /></p>
+<p>This is due to persistent cloud cover in some regions of Colombia. We can apply a Cloud Mask to improve the results. The Landsat 8 collections contains a <a class="reference external" href="https://www.usgs.gov/core-science-systems/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con">“Quality Assessment (QA)” band</a> called <code class="docutils literal notranslate"><span class="pre">pixel_qa</span></code> that provides useful information of certain conditions within the data, and allows users to apply per pixel filters. Each pixel in the QA band contains unsigned integers that represent bit-packed combinations of surface, atmospheric, and sensor conditions. Of particular interest here, are Bits 3 and 5 that represent cloud shadow, and cloud, respectively.</p>
+<p>We will create a <code class="docutils literal notranslate"><span class="pre">function</span></code> to apply a cloud mask to every image in the image collection by using the image collection function <code class="docutils literal notranslate"><span class="pre">map</span></code>. Copy and paste the code below and click <em>Run</em>.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">maskL8srClouds</span><span class="p">(</span><span class="nx">image</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Bits 3 and 5 are cloud shadow and cloud, respectively.</span>
+  <span class="kd">var</span> <span class="nx">cloudShadowBitMask</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">);</span>
+  <span class="kd">var</span> <span class="nx">cloudsBitMask</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">5</span><span class="p">);</span>
+  <span class="c1">// Get the pixel QA band.</span>
+  <span class="kd">var</span> <span class="nx">qa</span> <span class="o">=</span> <span class="nx">image</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s1">&#39;pixel_qa&#39;</span><span class="p">);</span>
+  <span class="c1">// Both flags should be set to zero, indicating clear conditions.</span>
+  <span class="kd">var</span> <span class="nx">mask</span> <span class="o">=</span> <span class="nx">qa</span><span class="p">.</span><span class="nx">bitwiseAnd</span><span class="p">(</span><span class="nx">cloudShadowBitMask</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="nx">qa</span><span class="p">.</span><span class="nx">bitwiseAnd</span><span class="p">(</span><span class="nx">cloudsBitMask</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+  <span class="k">return</span> <span class="nx">image</span><span class="p">.</span><span class="nx">updateMask</span><span class="p">(</span><span class="nx">mask</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">l8FiltMasked</span> <span class="o">=</span> <span class="nx">l8</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterMetadata</span><span class="p">(</span><span class="s1">&#39;CLOUD_COVER&#39;</span><span class="p">,</span><span class="s1">&#39;less_than&#39;</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">maskL8srClouds</span><span class="p">);</span>
+
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;L8 SR collection filtered and masked&#39;</span><span class="p">,</span> <span class="nx">l8FiltMasked</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">l8compositeMasked</span> <span class="o">=</span> <span class="nx">l8FiltMasked</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span>
+
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;L8 composite 2019 masked&#39;</span><span class="p">,</span> <span class="nx">l8compositeMasked</span><span class="p">);</span>
+
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">l8compositeMasked</span><span class="p">,</span>
+             <span class="p">{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mi">2000</span><span class="p">},</span>
+             <span class="s1">&#39;L8 composite 2019 masked&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="_images/l8masked.png" src="_images/l8masked.png" /></p>
+<p>The resulting composite shows masked clouds and is a great improvement compared to previous composites. However, data gaps are still an issue. Luckily, the <a class="reference external" href="https://www.usgs.gov/core-science-systems/nli/landsat/landsat-satellite-missions?qt-science_support_page_related_con=2#qt-science_support_page_related_con">Landsat collection spans different missions</a>, which have continuously acquired uninterrupted data since 1972 at different acquisition dates. Next, we will try incorporating Landsat 7 images from the same time period to fill these gaps.</p>
+<blockquote>
+<div><p>NOTE: At this point, you probably have noticed that the layers are taking a while to load, i.e. the script is overall “slower”. To avoid waiting too much to check results, and running into an <code class="docutils literal notranslate"><span class="pre">Earth</span> <span class="pre">Engine</span> <span class="pre">memory</span> <span class="pre">capacity</span> <span class="pre">exceeded</span></code> error, you can comment out some of the <code class="docutils literal notranslate"><span class="pre">print</span></code> and <code class="docutils literal notranslate"><span class="pre">Map.addLayer</span></code> statements by adding double forward slashes <code class="docutils literal notranslate"><span class="pre">//</span></code> at the beginning of the lines <strong>or</strong> by clicking on the desired line and pressing <em>Ctrl + /</em>. Use this strategy throughout the rest of this tutorial and only print and add layers to the map of desired composites.</p>
+</div></blockquote>
+</div>
+<div class="section" id="adding-the-landsat-7-collection">
+<h4>4.2.2 Adding the Landsat 7 Collection<a class="headerlink" href="#adding-the-landsat-7-collection" title="Permalink to this headline">¶</a></h4>
+<p>Like Landsat 8, we will use the <a class="reference external" href="https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LE07_C01_T1_SR">USGS Landsat 7 Surface Reflectance Tier 1</a> product in GEE. This dataset is the atmospherically corrected surface reflectance from the Landsat 7 ETM+ sensor. These images contain 4 visible and near-infrared (VNIR) bands and 2 short-wave infrared (SWIR) bands processed to orthorectified surface reflectance, and one thermal infrared (TIR) band processed to orthorectified brightness temperature.</p>
+<p>Let’s first see how a Landsat 7 composite would look like for the sake of comprehensive understanding and completeness.</p>
+<p>The next steps are very similar to the ones we did for Landsat 8. First, define your Landsat 7 collection variable.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">l7</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">ImageCollection</span><span class="p">(</span><span class="s1">&#39;LANDSAT/LE07/C01/T1_SR&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>We will immediately apply a cloud mask to this collection since we saw that Colombia has consistent cloud cover. Let’s define the cloud mask function for Landsat 7.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">maskL7srClouds</span><span class="p">(</span><span class="nx">image</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">qa</span> <span class="o">=</span> <span class="nx">image</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s1">&#39;pixel_qa&#39;</span><span class="p">);</span>
+  <span class="c1">// If the cloud bit (5) is set and the cloud confidence (7) is high</span>
+  <span class="c1">// or the cloud shadow bit is set (3), then it&#39;s a bad pixel.</span>
+  <span class="kd">var</span> <span class="nx">cloud</span> <span class="o">=</span> <span class="nx">qa</span><span class="p">.</span><span class="nx">bitwiseAnd</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">5</span><span class="p">)</span>
+                  <span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="nx">qa</span><span class="p">.</span><span class="nx">bitwiseAnd</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">))</span>
+                  <span class="p">.</span><span class="nx">or</span><span class="p">(</span><span class="nx">qa</span><span class="p">.</span><span class="nx">bitwiseAnd</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">));</span>
+  <span class="c1">// Remove edge pixels that don&#39;t occur in all bands</span>
+  <span class="kd">var</span> <span class="nx">maskL7</span> <span class="o">=</span> <span class="nx">image</span><span class="p">.</span><span class="nx">mask</span><span class="p">().</span><span class="nx">reduce</span><span class="p">(</span><span class="nx">ee</span><span class="p">.</span><span class="nx">Reducer</span><span class="p">.</span><span class="nx">min</span><span class="p">());</span>
+  <span class="k">return</span> <span class="nx">image</span><span class="p">.</span><span class="nx">updateMask</span><span class="p">(</span><span class="nx">cloud</span><span class="p">.</span><span class="nx">not</span><span class="p">()).</span><span class="nx">updateMask</span><span class="p">(</span><span class="nx">maskL7</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Let’s filter the Landsat 7 collection with the same filters used for Landsat 8, apply the cloud mask, and create the Landsat 7 composite.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">l7FiltMasked</span> <span class="o">=</span> <span class="nx">l7</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterMetadata</span><span class="p">(</span><span class="s1">&#39;CLOUD_COVER&#39;</span><span class="p">,</span><span class="s1">&#39;less_than&#39;</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">maskL7srClouds</span><span class="p">);</span>
+
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;L7 SR collection masked&#39;</span><span class="p">,</span><span class="nx">l7FiltMasked</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">l7compositeMasked</span> <span class="o">=</span> <span class="nx">l7FiltMasked</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span>
+
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">l7compositeMasked</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span><span class="s1">&#39;B1&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span>
+                                <span class="nx">max</span><span class="o">:</span><span class="mi">2000</span><span class="p">},</span><span class="s1">&#39;L7 composite 2019 masked&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>NOTE: We used <code class="docutils literal notranslate"><span class="pre">bands:['B3','B2','B1']</span></code> this time because Landsat 7 has different band designations. The sensors aboard each of the Landsat satellites were designed to acquire data in different ranges of frequencies along the electromagnetic spectrum. Whereas for Landsat 8 the red, green, and blue bands are B4, B3, and B2, respectively, for Landsat 7, these same bands are B3, B2, and B1, respectively. For more information refer to <a class="reference external" href="https://www.usgs.gov/faqs/what-are-band-designations-landsat-satellites?qt-news_science_products=0#qt-news_science_products">this page</a>.</p>
+</div></blockquote>
+<p><img alt="_images/l7composite.png" src="_images/l7composite.png" /></p>
+<p>You should see an image with many gaps like the one above. The Landsat 7 was launched in 1999 but since 2003, the sensor has acquired and delivered data with data gaps caused by the Scan Line Corrector (SLC) failure. Without an operating SLC, the sensor’s line of sight traces a zig-zag pattern along the satellite ground track, and, as a result, the imaged area is duplicated. When the Level-1 data are processed, the duplicated areas are removed, leaving data gaps. For more information about Landsat 7 and SLC error, please refer to <a class="reference external" href="https://www.usgs.gov/core-science-systems/nli/landsat/landsat-7?qt-science_support_page_related_con=0#qt-science_support_page_related_con">this page</a>.</p>
+<p><img alt="Scan Line Corrector (SLC) error. (Source: USGS)" src="_images/SLC.jpg" />{ width=85% }</p>
+<p>Now, let’s combine both Landsat 7 and 8 collections.</p>
+</div>
+<div class="section" id="combining-both-sensors-into-one-composite">
+<h4>4.2.3 Combining both sensors into one composite<a class="headerlink" href="#combining-both-sensors-into-one-composite" title="Permalink to this headline">¶</a></h4>
+<p>As mentioned previously, Landsat 7 and 8 have different band designations. Hence, let’s start by creating a function to rename the bands from Landsat 7 to match Landsat 8’s and map that function to our L7 collection.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Since Landsat 7 and 8 have different band designations,</span>
+<span class="c1">// let&#39;s create a function to rename L7 bands to match up L8.</span>
+<span class="kd">function</span> <span class="nx">rename</span><span class="p">(</span><span class="nx">image</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">image</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span>
+    <span class="p">[</span><span class="s1">&#39;B1&#39;</span><span class="p">,</span> <span class="s1">&#39;B2&#39;</span><span class="p">,</span> <span class="s1">&#39;B3&#39;</span><span class="p">,</span> <span class="s1">&#39;B4&#39;</span><span class="p">,</span> <span class="s1">&#39;B5&#39;</span><span class="p">,</span> <span class="s1">&#39;B7&#39;</span><span class="p">,</span><span class="s1">&#39;pixel_qa&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span> <span class="s1">&#39;B3&#39;</span><span class="p">,</span> <span class="s1">&#39;B4&#39;</span><span class="p">,</span> <span class="s1">&#39;B5&#39;</span><span class="p">,</span> <span class="s1">&#39;B6&#39;</span><span class="p">,</span> <span class="s1">&#39;B7&#39;</span><span class="p">,</span><span class="s1">&#39;pixel_qa&#39;</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="c1">// Apply the rename function</span>
+<span class="kd">var</span> <span class="nx">l7FiltMaskedRenamed</span> <span class="o">=</span> <span class="nx">l7FiltMasked</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">rename</span><span class="p">);</span>
+
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;L7 SR collection renamed&#39;</span><span class="p">,</span><span class="nx">l7FiltMaskedRenamed</span><span class="p">);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>NOTE: If you check the bands of the first images of both <code class="docutils literal notranslate"><span class="pre">l7FiltMasked</span></code> and <code class="docutils literal notranslate"><span class="pre">l7FiltMaskedRenamed</span></code> collections you will see that the band names got renamed, and not all bands got copied over (<code class="docutils literal notranslate"><span class="pre">sr_atmos_opacity</span></code>, <code class="docutils literal notranslate"><span class="pre">sr_cloud_qa</span></code>,  <code class="docutils literal notranslate"><span class="pre">radsat_qa</span></code>, and <code class="docutils literal notranslate"><span class="pre">B6</span></code>). To copy these additional bands, simply add them to the rename function (for <code class="docutils literal notranslate"><span class="pre">B6</span></code> you will need to rename it so it does not have the same name as the new Band 5). The image below shows the bands of the first image of the Landsat 7 collection on the left, and the bands of the first image of the renamed Landsat 7 collection on the right.</p>
+<p><img alt="_images/rename.png" src="_images/rename.png" /></p>
+</div></blockquote>
+<p>Now we merge both collections. We will use the <code class="docutils literal notranslate"><span class="pre">merge</span></code> function for <code class="docutils literal notranslate"><span class="pre">imageCollection</span></code>. Copy and paste the code below and click <em>Run</em>. You will see in the Console that now you have a collection with 999 images (563 from Landsat 8 and 436 from Landsat 7).</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Merge Landsat collections</span>
+<span class="kd">var</span> <span class="nx">l78</span> <span class="o">=</span> <span class="nx">l7FiltMaskedRenamed</span><span class="p">.</span><span class="nx">merge</span><span class="p">(</span><span class="nx">l8FiltMasked</span><span class="p">);</span>
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;Merged collections&#39;</span><span class="p">,</span><span class="nx">l78</span><span class="p">);</span>
+</pre></div>
+</div>
+<img src="figures/m1.1/mergedCollection.png" style="zoom:35%;" /><p>Now, to create the composite, we do the same as before. Note that if you run the code below you will run into an error:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Create Landsat 7 and 8 image composite and add to Map</span>
+<span class="kd">var</span> <span class="nx">l78composite</span> <span class="o">=</span> <span class="nx">l78</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span> <span class="c1">// can be changed to mean, min, etc</span>
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">l78composite</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mi">2000</span><span class="p">},</span>
+             <span class="s1">&#39;Landsat 7 and 8 composite&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="_images/tileError.png" src="_images/tileError.png" /></p>
+<p>This is because the Landsat 7 collection has 7 bands and the Landsat 8 has 12 bands. To be mosaicked and added to the map, they need to have the same number of bands. We will modify the code block that we are merging both collections to add a <code class="docutils literal notranslate"><span class="pre">select</span></code> function to the Landsat 8 collection. The <code class="docutils literal notranslate"><span class="pre">select</span></code> function will select specific bands from the images. We will select only the bands available in the Landsat 7 collection. Therefore, change the merging procedure to:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Merge Landsat collections</span>
+<span class="kd">var</span> <span class="nx">l78</span> <span class="o">=</span> <span class="nx">l7FiltMaskedRenamed</span><span class="p">.</span><span class="nx">merge</span><span class="p">(</span><span class="nx">l8FiltMasked</span>
+          <span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B5&#39;</span><span class="p">,</span><span class="s1">&#39;B6&#39;</span><span class="p">,</span><span class="s1">&#39;B7&#39;</span><span class="p">,</span><span class="s1">&#39;pixel_qa&#39;</span><span class="p">));</span>
+<span class="nx">print</span><span class="p">(</span><span class="s1">&#39;Merged collections&#39;</span><span class="p">,</span><span class="nx">l78</span><span class="p">);</span>
+
+<span class="c1">// Create Landsat 7 and 8 image composite and add to Map</span>
+<span class="kd">var</span> <span class="nx">l78composite</span> <span class="o">=</span> <span class="nx">l78</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span> <span class="c1">// can be changed to mean, min, etc</span>
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">l78composite</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mi">2000</span><span class="p">},</span>
+             <span class="s1">&#39;Landsat 7 and 8 2019 composite&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>You should see an image composite that looks like this:</p>
+<p><img alt="_images/mergedComposite.png" src="_images/mergedComposite.png" /></p>
+<p>Compared to the previous Landsat 8-only composite, you can see that some of the gaps have been filled. However, due to the general mosaicking/compositing nature, and Landsat 7’s  SLC error, you can also see some artifacts in some regions:</p>
+<p><img alt="Comparison Landsat 8-only composite (left) and Landsat 7 and 8 composite (right) for 2019. Artifacts are demonstrated for both composites at centroid Latitude: 1.46, Longitude: -69.99" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/l8andMergedComparison.png" /></p>
+</div>
+<div class="section" id="trying-to-fill-gaps-with-focal-mean-or-median-functions">
+<h4>4.2.4 Trying to fill gaps with Focal Mean (or median) functions<a class="headerlink" href="#trying-to-fill-gaps-with-focal-mean-or-median-functions" title="Permalink to this headline">¶</a></h4>
+<p>We can try filling gaps using a focal mean or focal median function to the images in the collection. These apply a morphological filter to each band of an image by inputting the pixels in a custom kernel and then applying a blend. For more information about GEE’s focal functions check <a class="reference external" href="https://developers.google.com/earth-engine/guides/image_morph">this page</a>. On the same script, let’s add the block of code below. First, we create a function to apply the <code class="docutils literal notranslate"><span class="pre">focal_mean</span></code> (or <code class="docutils literal notranslate"><span class="pre">focal_median</span></code>) function to each image in the Landsat 7 collection, then merge the collections as before, and create the composite.</p>
+<blockquote>
+<div><p>NOTE: The <code class="docutils literal notranslate"><span class="pre">focal_mean</span></code> function contains 5 input arguments: <code class="docutils literal notranslate"><span class="pre">radius</span></code>, <code class="docutils literal notranslate"><span class="pre">kernelType</span></code>, <code class="docutils literal notranslate"><span class="pre">units</span></code>, <code class="docutils literal notranslate"><span class="pre">iterations</span></code>, and <code class="docutils literal notranslate"><span class="pre">kernel</span></code>. You can find information about each of them by searching focal mean in the <em>Docs</em> tab (and about any GEE function). For this example we defined a radius of 1.5, a square kernel type, pixel kernel, and 2 iterations. You can test with different variables. The larger these values the greater the blurring on the data.</p>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/focalMeanDocs.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/focalMeanDocs.png" /></p>
+</div></blockquote>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Function to fill gaps from SLC error using focal mean </span>
+<span class="kd">function</span> <span class="nx">fillGap</span><span class="p">(</span><span class="nx">image</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">image</span><span class="p">.</span><span class="nx">focal_mean</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;square&#39;</span><span class="p">,</span> <span class="s1">&#39;pixels&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="nx">blend</span><span class="p">(</span><span class="nx">image</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Apply fillGap function to Landsat 7 collection and merge with Landsat 8 collection</span>
+<span class="kd">var</span> <span class="nx">l78Fill</span> <span class="o">=</span> <span class="nx">l7FiltMaskedRenamed</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">fillGap</span><span class="p">).</span><span class="nx">merge</span><span class="p">(</span><span class="nx">l8FiltMasked</span>
+              <span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B5&#39;</span><span class="p">,</span><span class="s1">&#39;B6&#39;</span><span class="p">,</span><span class="s1">&#39;B7&#39;</span><span class="p">,</span><span class="s1">&#39;pixel_qa&#39;</span><span class="p">));</span>
+
+<span class="c1">// Create commposite</span>
+<span class="kd">var</span> <span class="nx">l78compositeFill</span> <span class="o">=</span> <span class="nx">l78Fill</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span> <span class="c1">// can be changed to mean, min, etc</span>
+
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">l78compositeFill</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span>
+                               <span class="nx">max</span><span class="o">:</span><span class="mi">2000</span><span class="p">},</span><span class="s1">&#39;Landsat 7 and 8 2019 composite focal fill&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>You should see a composite like the one below. In this particular case, it might be worth not applying this method since it “created” new pixels that look like clouds and the previous method does a better job.</p>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/focalMean.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/focalMean.png" /></p>
+</div>
+<div class="section" id="medoid-composite">
+<h4>4.2.5 Medoid Composite<a class="headerlink" href="#medoid-composite" title="Permalink to this headline">¶</a></h4>
+<p>A medoid is a representative object of a dataset whose average dissimilarity to all the objects in the cluster is minimal. Medoids are similar in concept to means or centroids, but medoids are always restricted to be members of the data set. We use medoid to find the best available pixels for compositing, and as an alternative to median composites. The process requires little logic, is robust, and fast.</p>
+<p>We first calculate the difference between the median and the observation per image per band, then we get the medoid by selecting the image pixel with the smallest difference between the median and the observation per band. We will create a medoid composite for the Landsat merged collection. Copy and paste the code below and check the results on the map.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Calculate median across images in collection per band</span>
+<span class="kd">var</span> <span class="nx">l78median</span> <span class="o">=</span> <span class="nx">l78</span><span class="p">.</span><span class="nx">median</span><span class="p">();</span> <span class="c1">// calculate the median of the annual image collection - returns a single 6 band image - the collection median per band</span>
+  
+<span class="c1">// Calculate the different between the median and the observation per image per band,</span>
+<span class="c1">// then get the medoid by selecting the image pixel with the smallest difference </span>
+<span class="c1">// between median and observation per band.</span>
+<span class="kd">var</span> <span class="nx">l78medoidComposite</span> <span class="o">=</span> <span class="nx">l78</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">image</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">diff</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">Image</span><span class="p">(</span><span class="nx">image</span><span class="p">).</span><span class="nx">subtract</span><span class="p">(</span><span class="nx">l78median</span><span class="p">).</span><span class="nx">pow</span><span class="p">(</span><span class="nx">ee</span><span class="p">.</span><span class="nx">Image</span><span class="p">.</span><span class="nx">constant</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span> <span class="c1">// get the difference between each image/band and the corresponding band median and take to power of 2 to make negatives positive and make greater differences weight more</span>
+  <span class="k">return</span> <span class="nx">diff</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">).</span><span class="nx">addBands</span><span class="p">(</span><span class="nx">image</span><span class="p">);</span>  <span class="c1">// per image in collection, sum the powered difference across the bands - set this as the first band add the SR bands to it - now a 7 band image collection</span>
+<span class="p">}).</span><span class="nx">reduce</span><span class="p">(</span><span class="nx">ee</span><span class="p">.</span><span class="nx">Reducer</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="mi">7</span><span class="p">)).</span><span class="nx">select</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B5&#39;</span><span class="p">,</span><span class="s1">&#39;B6&#39;</span><span class="p">,</span><span class="s1">&#39;B7&#39;</span><span class="p">])</span> <span class="c1">// find the powered difference that is the least - what image object is the closest to the median of the collection - and then subset the SR bands and name them - leave behind the powered difference band;</span>
+  <span class="p">.</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span> 
+  
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">l78medoidComposite</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mi">2000</span><span class="p">},</span><span class="s1">&#39;L7&amp;8 Medoid composite 2019&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/LandsatMedoid.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/LandsatMedoid.png" /></p>
+<p>You should see an image like the one above. At first sight, you might think there is not much of a difference comparing with the median composite. However, the medoid composite can show significant improvements for certain pixels. See the example below for point (2.86, -74.73)</p>
+<p><img alt="Comparison of median (left) vs. medoid (right) composites at centroid Latitude: 2.86, Longitude: -74.73" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/MedoidComparison.png" /></p>
+<p>Now, let’s create a median composite with the European Space Agency (ESA) Copernicus Sentinel-2 dataset. Sentinel-2 is a wide-swath, high-resolution, multi-spectral imaging mission supporting Copernicus Land Monitoring studies, including the monitoring of vegetation, soil and water cover, as well as observation of inland waterways and coastal areas.</p>
+</div>
+</div>
+<div class="section" id="sentinel-2-collection">
+<h3>4.3 Sentinel-2 Collection<a class="headerlink" href="#sentinel-2-collection" title="Permalink to this headline">¶</a></h3>
+<p>Let’s start by defining our Sentinel-2 image collection variable. We will use the <a class="reference external" href="https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR">Sentinel-2 MSI: MultiSpectral Instrument, Level-2A</a> product in GEE from the European Space Agency, which is the Bottom-of-Atmosphere product (i.e. Surface Reflectance).</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// We will use the Sentinel-2 Surface Reflection product.</span>
+<span class="c1">// This dataset has already been atmospherically corrected</span>
+<span class="kd">var</span> <span class="nx">s2</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">ImageCollection</span><span class="p">(</span><span class="s2">&quot;COPERNICUS/S2_SR&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>NOTE: The Sentinel-2 L2 data in GEE are downloaded from ESA’s <a class="reference external" href="https://scihub.copernicus.eu/">scihub</a>. They were computed by running <a class="reference external" href="https://step.esa.int/main/third-party-plugins-2/sen2cor/">sen2cor</a>. The assets contain 12 UINT16 spectral bands representing SR scaled by 10000 (unlike in L1 data, there is no B10). There are also several more L2-specific bands (see band list for details). See the <a class="reference external" href="https://sentinel.esa.int/documents/247904/685211/Sentinel-2_User_Handbook">Sentinel-2 User Handbook</a> for details. In addition, three QA bands are present where one (QA60) is a bitmask band with cloud mask information. For more details, <a class="reference external" href="https://sentinel.esa.int/web/sentinel/technical-guides/sentinel-2-msi/level-1c/cloud-masks">see the full explanation of how cloud masks are computed.</a></p>
+</div></blockquote>
+<p>We define a function to apply a cloud mask to Sentinel-2 images using the <code class="docutils literal notranslate"><span class="pre">QA60</span></code> band which contains information about cloud masks. Then, similarly to the Landsat collections, we will filter our Sentinel-2 collection by our defined parameters (<code class="docutils literal notranslate"><span class="pre">startDate</span></code>, <code class="docutils literal notranslate"><span class="pre">endDate</span></code>, <code class="docutils literal notranslate"><span class="pre">country</span></code>, etc). Copy and past the code below and click <em>Run</em>.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Function to mask clouds S2</span>
+<span class="kd">function</span> <span class="nx">maskS2srClouds</span><span class="p">(</span><span class="nx">image</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">qa</span> <span class="o">=</span> <span class="nx">image</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s1">&#39;QA60&#39;</span><span class="p">);</span>
+
+  <span class="c1">// Bits 10 and 11 are clouds and cirrus, respectively.</span>
+  <span class="kd">var</span> <span class="nx">cloudBitMask</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">cirrusBitMask</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">11</span><span class="p">;</span>
+
+  <span class="c1">// Both flags should be set to zero, indicating clear conditions.</span>
+  <span class="kd">var</span> <span class="nx">mask</span> <span class="o">=</span> <span class="nx">qa</span><span class="p">.</span><span class="nx">bitwiseAnd</span><span class="p">(</span><span class="nx">cloudBitMask</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="nx">qa</span><span class="p">.</span><span class="nx">bitwiseAnd</span><span class="p">(</span><span class="nx">cirrusBitMask</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+
+  <span class="k">return</span> <span class="nx">image</span><span class="p">.</span><span class="nx">updateMask</span><span class="p">(</span><span class="nx">mask</span><span class="p">).</span><span class="nx">divide</span><span class="p">(</span><span class="mi">10000</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Filter Sentinel-2 collection</span>
+<span class="kd">var</span> <span class="nx">s2Filt</span> <span class="o">=</span> <span class="nx">s2</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterMetadata</span><span class="p">(</span><span class="s1">&#39;CLOUDY_PIXEL_PERCENTAGE&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;less_than&#39;</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">maskS2srClouds</span><span class="p">);</span>
+
+<span class="c1">// print(&#39;Sentinel-2 Filtered collection&#39;,s2Filt);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>NOTE: For Sentinel-2 we use the property called <code class="docutils literal notranslate"><span class="pre">CLOUDY_PIXEL_PERCENTAGE</span></code> to filter cloudy scenes.</p>
+<p>NOTE 2: The <code class="docutils literal notranslate"><span class="pre">print</span></code> statement is commented out because if you try to print the collection it will return an error. Unlikely Landsat images which have a spatial resolution of 30 meters, Sentinel-2 images have a spatial resolution of 10 meters (for visible and NIR bands), the repeat cycle is shorter (12-day compared to 16-day of Landsat), and there is a difference in the swath width. These make the collection much larger, and, therefore, in this case, the filtered Sentinel-2 collection contains more than 5,000 elements.</p>
+</div></blockquote>
+<p>Now, let’s composite our 2019 collection and add to the map.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Composite images</span>
+<span class="kd">var</span> <span class="nx">s2composite</span> <span class="o">=</span> <span class="nx">s2Filt</span><span class="p">.</span><span class="nx">median</span><span class="p">().</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span> <span class="c1">// can be changed to mean, min, etc </span>
+
+<span class="c1">// Add composite to map</span>
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">s2composite</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span><span class="s1">&#39;B3&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mf">0.02</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mf">0.3</span><span class="p">,</span>
+                          <span class="nx">gamma</span><span class="o">:</span><span class="mf">1.5</span><span class="p">},</span><span class="s1">&#39;Sentinel-2 2019 composite&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/s2composite.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/s2composite.png" /></p>
+<blockquote>
+<div><p>Additional: You can try a different band combination to show the Sentinel-2 composite. Try the false color combination below using the SWIR 1, NIR, and Blue bands. This band combination is mostly used to monitor the health of crops because of how it uses short-wave and near-infrared. Both these bands are particularly good at highlighting dense vegetation which appears as dark green. <a class="reference external" href="https://gisgeography.com/sentinel-2-bands-combinations/">This page</a> explains different Sentinel-2 band combinations.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Test another band combination (SWIR 1, NIR, Blue)</span>
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">s2composite</span><span class="p">,{</span><span class="nx">bands</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;B11&#39;</span><span class="p">,</span><span class="s1">&#39;B8&#39;</span><span class="p">,</span><span class="s1">&#39;B2&#39;</span><span class="p">],</span><span class="nx">min</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span><span class="nx">max</span><span class="o">:</span><span class="mf">0.6</span><span class="p">},</span>
+             <span class="s1">&#39;Sentinel-2 2019 composite SWIR/NIR/Blue&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/s2compositeFalseColor.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/s2compositeFalseColor.png" /></p>
+</div></blockquote>
+<div class="section" id="warning-surface-reflectance-vs-top-of-atmosphere-products">
+<h4>Warning: Surface Reflectance vs. Top-of-Atmosphere products<a class="headerlink" href="#warning-surface-reflectance-vs-top-of-atmosphere-products" title="Permalink to this headline">¶</a></h4>
+<p>The European Space Agency did not produce Sentinel-2 Level-2 data (Bottom-of-Atmosphere reflectance; BOA) for all Level-1 assets (Top-of-Atmosphere radiance; TOA), and earlier Level-2 coverage is not global. You might not find these Surface Reflectance data for images before 2017. If you wish to work with images before 2017, please use the <a class="reference external" href="https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2">Sentinel-2 MSI: MultiSpectral Instrument, Level-1C product</a> which corresponds to the Top-of-Atmosphere dataset. The GEE Asset ID for this collection is <code class="docutils literal notranslate"><span class="pre">&quot;COPERNICUS/S2&quot;</span></code>.</p>
+<p>The Top-of-Atmosphere products have not been atmospherically corrected, therefore, a TOA composite will present differences compared to a BOA since it will represent influences from the atmosphere. An image of the 2019 median composite from Sentinel-2 L1 product is shown below together with the produced 2019 median composite from the L2 product for comparison.</p>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/TOA_BOAComparison.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/TOA_BOAComparison.png" /></p>
+<p>You can notice the blueish effect on the TOA composite.</p>
+</div>
+</div>
+</div>
+<div class="section" id="exporting-your-composite">
+<h2>5 Exporting your composite<a class="headerlink" href="#exporting-your-composite" title="Permalink to this headline">¶</a></h2>
+<p>Exporting data from the Code Editor is possible through the export functions, which include export options for images, tables, and videos. Export methods take several optional arguments so that you can control important characteristics of your output data, such as the resolution and region. You have three options to export an image: <code class="docutils literal notranslate"><span class="pre">Export.image.toDrive</span></code> to export to your Google Drive, <code class="docutils literal notranslate"><span class="pre">Export.image.toAsset</span></code> to export as a GEE Asset, and <code class="docutils literal notranslate"><span class="pre">Export.image.toCloudStorage</span></code> to export to your Google Cloud Storage.</p>
+<div class="section" id="export-to-your-google-drive">
+<h3>5.1 Export to your Google Drive<a class="headerlink" href="#export-to-your-google-drive" title="Permalink to this headline">¶</a></h3>
+<p>Add the statement below to the bottom of your script.  This will create a task in the <em>Task</em> tab that you can use to export your image  by clicking <em>Run</em>. The process is demonstrated for the Sentinel-2 composite created. To export more composites, simply copy and paste the same code and change the name of the image composite for the additional Export functions.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// To export to your Google Drive</span>
+<span class="nx">Export</span><span class="p">.</span><span class="nx">image</span><span class="p">.</span><span class="nx">toDrive</span><span class="p">({</span>
+  <span class="nx">image</span><span class="o">:</span> <span class="nx">s2composite</span><span class="p">,</span>
+  <span class="nx">description</span><span class="o">:</span> <span class="s1">&#39;S2composite2019GDrive&#39;</span><span class="p">,</span> <span class="c1">// task name to be shown in the Tasks tab</span>
+  <span class="nx">fileNamePrefix</span><span class="o">:</span> <span class="s1">&#39;s2composite&#39;</span><span class="p">,</span> <span class="c1">// filename to be saved in the Google Drive</span>
+  <span class="nx">scale</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nx">region</span><span class="o">:</span> <span class="nx">country</span><span class="p">,</span>
+  <span class="nx">maxPixels</span><span class="o">:</span> <span class="mi">1</span><span class="nx">e13</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p><img alt="_images/taskProcess.png" src="_images/taskProcess.png" /></p>
+<blockquote>
+<div><p>NOTE: In this example you have specified a few of the optional arguments recognized by <code class="docutils literal notranslate"><span class="pre">Export.image</span></code>. Though this function takes several optional parameters, it is valuable to familiarize yourself with these:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">maxPixels</span></code> - This restricts the numbers of pixels in the exported image. By default, this value is set to 10,000,000 pixels. You can set this argument to raise or lower the limit. “1e8” is 10 to the 8<sup>th</sup> power (10<sup>8</sup>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">region</span></code> - By default, the viewport of the Code Editor is exported but you can also specify a geometry to change the export extent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scale</span></code> - The resolution in meters per pixel. The native resolution for Sentinel-2 data set is 10 meters.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">crs</span></code> - The coordinate reference system for the output image. This is specified using the EPSG code. You can look up the EPSG code for your desired spatial projections at http://spatialreference.org.</p></li>
+</ul>
+<p>NOTE 2: If you try to export an image that contains bands with different data types, you will see an error. All bands of a Sentinel-2 image are <code class="docutils literal notranslate"><span class="pre">unsigned</span> <span class="pre">int16</span></code>, therefore, you won’t run into an error. However, for Landsat images, you will need to select specific bands by using the <code class="docutils literal notranslate"><span class="pre">select</span></code> function or cast bands to the same data type since data types vary for different bands (See below).</p>
+<p><img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/landsatDataType.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/landsatDataType.png" /></p>
+</div></blockquote>
+<p>Because we are exporting a composite for the entire country of Colombia, your export will take several minutes, perhaps hours. Once completed, you will notice that in the folder you specified, the composite you be broken down into separate GeoTiff files. E.g.:  s2composite2019-0000000000-0000000000.tif, s2composite2019-0000000000-000000xxxx.tif (with xxxx being different numbers), and so on.</p>
+<blockquote>
+<div><p>NOTE: to check the status of a task, hover the mouse over the export and click the <img alt="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/question.png" src="C:%5CUsers%5Capuzzini%5CDesktop%5CWB%5Cdoc%5Cdocs%5Cfigures/m1.1/question.png" /> icon. A window will appear showing the details:</p>
+<p><img alt="_images/taskDetails2.png" src="_images/taskDetails2.png" /></p>
+</div></blockquote>
+</div>
+<div class="section" id="export-as-an-asset">
+<h3>5.2 Export as an Asset<a class="headerlink" href="#export-as-an-asset" title="Permalink to this headline">¶</a></h3>
+<p>Similarly to the function above, copy and past the code below to export the image composite as a GEE Asset. The difference is <code class="docutils literal notranslate"><span class="pre">fileNamePrefix</span></code> becomes <code class="docutils literal notranslate"><span class="pre">assetId</span></code>. Change <code class="docutils literal notranslate"><span class="pre">YourPath</span></code> next to <code class="docutils literal notranslate"><span class="pre">assetId</span></code> to the actual path want the asset located.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// To export as a GEE Asset</span>
+<span class="nx">Export</span><span class="p">.</span><span class="nx">image</span><span class="p">.</span><span class="nx">toAsset</span><span class="p">({</span>
+  <span class="nx">image</span><span class="o">:</span> <span class="nx">s2composite</span><span class="p">,</span>
+  <span class="nx">description</span><span class="o">:</span> <span class="s1">&#39;S2composite2019Asset&#39;</span><span class="p">,</span>
+  <span class="nx">assetId</span><span class="o">:</span> <span class="s1">&#39;YourPath/s2composite&#39;</span><span class="p">,</span>
+  <span class="nx">scale</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nx">region</span><span class="o">:</span> <span class="nx">country</span><span class="p">,</span>
+  <span class="nx">maxPixels</span><span class="o">:</span> <span class="mi">1</span><span class="nx">e13</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>For information about managing your assets, please refer to <a class="reference external" href="https://developers.google.com/earth-engine/guides/asset_manager">this page</a>.</p>
+</div>
+<div class="section" id="export-to-a-google-cloud-storage-bucket">
+<h3>5.3 Export to a Google Cloud Storage bucket<a class="headerlink" href="#export-to-a-google-cloud-storage-bucket" title="Permalink to this headline">¶</a></h3>
+<p>If you use Google Cloud Storage, you can use the code block below. Change <code class="docutils literal notranslate"><span class="pre">YourBucket</span></code> to the actual bucket you want the image composite exported to.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// To export to Google Cloud Storage</span>
+<span class="nx">Export</span><span class="p">.</span><span class="nx">image</span><span class="p">.</span><span class="nx">toCloudStorage</span><span class="p">({</span>
+  <span class="nx">image</span><span class="o">:</span> <span class="nx">s2composite</span><span class="p">,</span>
+  <span class="nx">description</span><span class="o">:</span> <span class="s1">&#39;S2composite2019CloudStorage&#39;</span><span class="p">,</span>
+  <span class="nx">fileNamePrefix</span><span class="o">:</span> <span class="s1">&#39;s2composite&#39;</span><span class="p">,</span>
+  <span class="nx">bucket</span><span class="o">:</span> <span class="s1">&#39;YourBucket&#39;</span><span class="p">,</span>
+  <span class="nx">scale</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nx">region</span><span class="o">:</span> <span class="nx">country</span><span class="p">,</span>
+  <span class="nx">maxPixels</span><span class="o">:</span> <span class="mi">1</span><span class="nx">e13</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>Congratulations, you have reached the end of this module. In the next modules, you will learn how to collect training data using QGIS and GEE.</p>
+</div>
+</div>
+<div class="section" id="faqs">
+<h2>6 FAQs<a class="headerlink" href="#faqs" title="Permalink to this headline">¶</a></h2>
+<p>Why are we using <a class="reference external" href="https://developers.google.com/earth-engine/datasets/catalog/USDOS_LSIB_SIMPLE_2017">LISB Simplified</a> and not <a class="reference external" href="https://developers.google.com/earth-engine/datasets/catalog/USDOS_LSIB_2017">LISB Detailed</a>?</p>
+<blockquote>
+<div><p>The more detailed a multi-polygon is, the more compute resources it needs. Because we are making computations on a national scale, we use the Simplified version to avoid runtime errors. The usage of the Detailed version might cause an error known as <code class="docutils literal notranslate"><span class="pre">Earth</span> <span class="pre">Engine</span> <span class="pre">memory</span> <span class="pre">capacity</span> <span class="pre">exceeded</span></code>.</p>
+</div></blockquote>
+<p>I typed ‘colombia’ to filter the LISB dataset and it did not work. Why?</p>
+<blockquote>
+<div><p>The properties of a dataset are case-sensitive. The property <code class="docutils literal notranslate"><span class="pre">country_na</span></code> for the country of Colombia is a string that starts with a capital “C”, therefore, you should filter the metadata by using <code class="docutils literal notranslate"><span class="pre">'Colombia'</span></code> and not <code class="docutils literal notranslate"><span class="pre">'colombia'</span></code>.</p>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Open-MRV</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qgis.html">1.2.1 Training Data Collection Using QGIS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gee.html">1.2.2 Training Data Collection Using Google Earth Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="classification.html">1.3 Land Cover and Land Use Classification</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Open-MRV Tutorials</a></li>
+      <li>Next: <a href="qgis.html" title="next chapter">1.2.1 Training Data Collection Using QGIS</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Multiple Contributors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/composite.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

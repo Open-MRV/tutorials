@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1.3 Land Cover and Land Use Classification &#8212; Open-MRV v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine" href="composite.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="land-cover-and-land-use-classification">
+<h1>1.3 Land Cover and Land Use Classification<a class="headerlink" href="#land-cover-and-land-use-classification" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="learning-objectives">
+<h2>1.0 Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline">¶</a></h2>
+<p>At the end of this module, you will be able to:</p>
+<ul class="simple">
+<li><p>Describe how spectral space or data space are used in multivariate classification</p></li>
+<li><p>Apply and compare three commonly-used classification algorithms</p></li>
+<li><p>Assess possible sources of error in the classification process arising from pre-processing, sensor choice, and training sample design</p></li>
+</ul>
+<div class="section" id="pre-requisites-for-this-module">
+<h3>1.1 Pre-requisites for this module<a class="headerlink" href="#pre-requisites-for-this-module" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Google Earth Engine (GEE) concepts</p>
+<ul>
+<li><p>Getting a user account</p></li>
+<li><p>Image handling in GEE</p></li>
+<li><p>Basic syntax of functions</p></li>
+<li><p>Basic image processing, including choice of imagery, cloud-screening, mosaicking and compositing</p></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><p>NOTE:  These topics are covered in Module 1.1</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Basic remote sensing concepts</p>
+<ul>
+<li><p>The electromagnetic spectrum</p></li>
+<li><p>Spectral reflectance</p></li>
+<li><p>Recording of reflectance in bands</p></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="background">
+<h2>2.0 Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="spectral-data-space-and-classifiers">
+<h3>2.1 Spectral data space and classifiers<a class="headerlink" href="#spectral-data-space-and-classifiers" title="Permalink to this headline">¶</a></h3>
+<p>Before embarking on an image classification exercise, it is important to understand what is being classified.</p>
+<p>Terrestrial remotely-sensed imagery, whether from passive or active sensors, responds to the physical and chemical properties of the surface.  The varied reflectance and absorptance of electromagnetic energy is recorded in different bands of a sensor, and the numeric values recorded in those bands define a spectral space (or more broadly, an n-dimensional data space). All pixels in an image are placed in this data space by virtue of their measured reflectance in each spectral band of the sensor.</p>
+<p><img alt="Schematic view of a 2-dimensional spectral data space defined by two spectral bands.  Each dot represents a single pixel in an image. The location in the 2-d space of each pixel is defined its reflectance values in the two bands." src="_images/spectral_data_space.png" /></p>
+<p>Most classification algorithms operate entirely in this data space. Classifiers attempt to separate the space into bounded regions within which all pixels belong to a labeled class.  Some classifiers consider the bounds between regions to be hard, while others are fuzzier, treating membership in class as a probability.</p>
+<p><img alt="Classified spectral space. Each pixel from the prior figure has been labeled according to a classification scheme defined by the analyst.  In an ideal case such as that shown here, all of the pixels in each class can be grouped together into bounded regions." src="_images/spectral_data_space_and_classes.png" /></p>
+<p>Once the bounds of the class have been defined in spectral space, any other pixels in the image can be label according to the area in which they land.</p>
+<p><img alt="An pixel in the image with spectral values that place it at the location indicated by &quot;Pixel D&quot; lands within the bounds of Class 3, and thus would be labeled Class 3." src="_images/spectral_space_classifier_new_pixel.png" /></p>
+</div>
+<div class="section" id="land-cover-vs-land-use">
+<h3>2.2 Land cover vs. Land use<a class="headerlink" href="#land-cover-vs-land-use" title="Permalink to this headline">¶</a></h3>
+<p>The physical and chemical properties of the surface are related to land cover. When collecting training data to build a classification, the more closely the definitions of land cover correspond to the physical properties of the surface that control the spectral data space, the more successful the classification exercise.</p>
+<p>“Land use” refers to a human definition overlaid on the underlying land cover.  The same herbaceous vegetation land cover may have different land use designations:  grass in an urban area may be defined as “open space” or “park”, while the same grass in an agricultural area may be considered “pasture.”  Care must be taken when defining classification labels to be aware of potential ambiguities in the spectral properties of classes.</p>
+</div>
+<div class="section" id="other-resources">
+<h3>2.3 Other Resources<a class="headerlink" href="#other-resources" title="Permalink to this headline">¶</a></h3>
+<p><strong>Concept</strong>|<strong>Source</strong>|<strong>Site</strong>
+:—:|:—:|——-:
+Basics of remote sensing|Natural Resources Canada|https://www.nrcan.gc.ca/maps-tools-publications/satellite-imagery-air-photos/tutorial-fundamentals-remote-sensing/9309
+Fundamentals of Remote Sensing|ARSET (NASA Applied Science)|https://appliedsciences.nasa.gov/join-mission/training/english/fundamentals-remote-sensing</p>
+</div>
+</div>
+<div class="section" id="supervised-classification-in-google-earth-engine">
+<h2>3.0 Supervised Classification in Google Earth Engine<a class="headerlink" href="#supervised-classification-in-google-earth-engine" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview-of-workflow">
+<h3>3.1 Overview of workflow<a class="headerlink" href="#overview-of-workflow" title="Permalink to this headline">¶</a></h3>
+<p>Supervised classification refers to the process of using a training dataset with known labels to guide a mathematical classifier in the task of labeling spectral space. They key characteristic is that the training dataset guides (or “supervises”) the labeling.</p>
+<p>Although the specifics of the steps vary by classifier, the <a class="reference external" href="https://code.earthengine.google.com/1b1dbb7a31212ec2340f3b981a9f9979">supervised classification workflow in GEE</a> is similar across most variants.</p>
+<ul class="simple">
+<li><p>Get an image</p></li>
+<li><p>Get training data</p></li>
+<li><p>Train a classifier or clusterer</p></li>
+<li><p>Apply that classifier to the image</p></li>
+</ul>
+<p>Graphically, the steps are as follows.</p>
+<p><img alt="Workflow of classification" src="_images/lcluc_workflow.png" /></p>
+<p>This creates a map.  You will then need to evaluate how accurate that map is. This is covered in the later module on accuracy assessment.</p>
+<p>We will work through a simple example with the components noted below, and then illustrate variants on it. These instructions presume that you have an account on GEE, and are familiar with the setup, data formats, and functions in GEE.  If you need help with these steps, please go back to Module 1.1.</p>
+<p><strong>Classification component</strong>|<strong>Item used here</strong>|<strong>Module</strong>
+:—–:|:—–:|:—–:|
+Image|Landsat 8 composite from a single year|Module 1.1
+Training data|Point data|Module 1.2
+Classifier|CART|Current Module</p>
+<div class="section" id="get-set-up-load-the-script">
+<h4>3.1.1 Get set up:  Load the script<a class="headerlink" href="#get-set-up-load-the-script" title="Permalink to this headline">¶</a></h4>
+<ol class="simple">
+<li><p>Log in to GEE’s Javascript code editor at code.earthengine.google.com</p></li>
+<li><p><em>Optional</em> Set up a new repository for your work</p></li>
+</ol>
+<p><img alt="This is how you do it" src="_images/GEE_new_repo.png" /></p>
+<ol class="simple">
+<li><p>Open this <a class="reference external" href="https://code.earthengine.google.com/ad6ed9df3e04f889cf201ba11ba5caee">GEE script</a></p></li>
+<li><p>Save it to your favorite folder</p></li>
+</ol>
+<blockquote>
+<div><p>Hint: You will need to make one alteration to the file to be able to save it under a local name.  Add a space somewhere in the script, then use the “Save As” function.</p>
+</div></blockquote>
+<p><img alt="The Save As Function" src="_images/GEE_save_as.png" /></p>
+<ol class="simple">
+<li><p>Use the “Run” button to run the script</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="build-image-composite">
+<h3>3.2 Build image composite<a class="headerlink" href="#build-image-composite" title="Permalink to this headline">¶</a></h3>
+<p>The first chunk of code builds from the prior module on image compositing methods.  We build a Landsat 8 surface reflectance image collection from 2019, filtered by cloud cover, applied a median value, and clipped to the bounds of the country.  The details of these steps are covered in Module 1.1.</p>
+<ul class="simple">
+<li><p>The key chunk of code:</p></li>
+</ul>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">l8compositeMasked</span> <span class="o">=</span> <span class="nx">l8</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterMetadata</span><span class="p">(</span><span class="s1">&#39;CLOUD_COVER&#39;</span><span class="p">,</span><span class="s1">&#39;less_than&#39;</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">maskL8srClouds</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">median</span><span class="p">()</span>
+                <span class="p">.</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Below is an image of a small area of Colombia in the region around Medellin.  The color combination here uses the shortwave infrared, near-infrared, and red bands in the Red, Green, and Blue color guns of the display.  Forest appears green, while built-up areas are magenta.  Note that there are areas in grey for which no valid pixels were found – these are areas of persistent cloudiness.</p>
+<p><img alt="Image of landsat composite" src="_images/landsat8_composite.png" /></p>
+</div>
+<div class="section" id="load-training-data">
+<h3>3.3 Load training data<a class="headerlink" href="#load-training-data" title="Permalink to this headline">¶</a></h3>
+<p>Training data are the observations that we will use to build the classification. As noted above, the definitions of the class labels of these training data should be defined with consideration of the spectral properties of the surface.</p>
+<p>For this exercise, we will use training data collected under the methods described in the modules on reference data collection (Module 1.2).  These data are included as an asset in the script provided above.  Alternatively, these can be added in a GEE script using:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">training</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">FeatureCollection</span><span class="p">(</span>
+<span class="s1">&#39;users/ramblingrek/colombia_training_4class_nov1&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>Terminology:  In GEE, datasets such as these training points are defined as a “FeatureCollection”.  For users familiar with the concepts of shapefiles or similar vector representations of geospatial data, the two are essentially the same. In GEE, vector data have a “geometry,” which contains the geographic position of the points, lines, and polygons of a vector object, as well as the attributes that record the information about those geometries. Taken together, these make up a single “Feature”, such as a single point or polygon.  Many of these together are considered a “FeatureCollection”.</p>
+</div></blockquote>
+<p>For reference, we defined the class codes and labels in the prior module as follows:</p>
+<p><strong>Class code</strong>|<strong>Class label</strong>
+:—–:|:—–:
+1|Forest
+2|Water
+3|Herbaceous
+4|Developed</p>
+<blockquote>
+<div><p><strong>Advanced usage:</strong>  For later interpretation, it is useful to color code these these classes.  See the code for an approach to color each interpreted point according to a color scheme defined using hexadecimal codes.</p>
+</div></blockquote>
+<p><img alt="The training points from Module 1.2.1 displayed in the code editor of GEE." src="_images/training_points_colombia.png" /></p>
+</div>
+<div class="section" id="associate-training-points-with-spectral-values">
+<h3>3.4 Associate training points with spectral values<a class="headerlink" href="#associate-training-points-with-spectral-values" title="Permalink to this headline">¶</a></h3>
+<p>Next, the spectral values of the image are extracted at the locations associated with the training points.  First, the spectral bands of the image must be specified, and then the “.sampleRegions” operation is applied to the image.</p>
+<p>The full code is as follows:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// For classification, we will use the visible, near infrared, and shortwave infrared bands</span>
+
+<span class="kd">var</span> <span class="nx">bands_to_use</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span> <span class="s1">&#39;B3&#39;</span><span class="p">,</span> <span class="s1">&#39;B4&#39;</span><span class="p">,</span> <span class="s1">&#39;B5&#39;</span><span class="p">,</span> <span class="s1">&#39;B6&#39;</span><span class="p">,</span> <span class="s1">&#39;B7&#39;</span><span class="p">]</span>
+
+
+<span class="c1">// Now do a spatial overlay of the points on the image, and extract </span>
+
+<span class="kd">var</span> <span class="nx">landcover_labels</span> <span class="o">=</span> <span class="s1">&#39;landcover&#39;</span>
+
+<span class="kd">var</span> <span class="nx">training_extract</span> <span class="o">=</span> <span class="nx">l8compositeMasked</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="nx">bands_to_use</span><span class="p">).</span><span class="nx">sampleRegions</span><span class="p">({</span>
+  <span class="nx">collection</span><span class="o">:</span> <span class="nx">training_points</span><span class="p">,</span> 
+  <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span><span class="nx">landcover_labels</span><span class="p">],</span>
+  <span class="nx">scale</span><span class="o">:</span> <span class="mi">30</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p><em><strong>Parsing the code:</strong></em></p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span>	<span class="kd">var</span> <span class="nx">bands_to_use</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;B2&#39;</span><span class="p">,</span> <span class="s1">&#39;B3&#39;</span><span class="p">,</span> <span class="s1">&#39;B4&#39;</span><span class="p">,</span> <span class="s1">&#39;B5&#39;</span><span class="p">,</span> <span class="s1">&#39;B6&#39;</span><span class="p">,</span> <span class="s1">&#39;B7&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The band names can be found in the description of the original image source, here Landsat 8.  Note that the names are specified as a list of string values.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">landcover_labels</span> <span class="o">=</span> <span class="s1">&#39;landcover&#39;</span>
+</pre></div>
+</div>
+<p>This specifies which attribute in the FeatureCollection holds the labeled values.  As noted in Module 1.2, this label must be a numeric code.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">training_extract</span> <span class="o">=</span> <span class="nx">l8compositeMasked</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="nx">bands_to_use</span><span class="p">).</span><span class="nx">sampleRegions</span><span class="p">({</span>
+  <span class="nx">collection</span><span class="o">:</span> <span class="nx">training_points</span><span class="p">,</span> 
+  <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span><span class="nx">landcover_labels</span><span class="p">],</span>
+  <span class="nx">scale</span><span class="o">:</span> <span class="mi">30</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">.sampleRegions</span></code> function requires information about the feature collection to be used, the attribute (property) to extract, and the pixel scale (in meters).</p>
+<p>At the end of this step , the <code class="docutils literal notranslate"><span class="pre">training_extract</span></code> FeatureCollection contains the spectral values from the <code class="docutils literal notranslate"><span class="pre">bands_to_use</span></code> and the labels from the training points.</p>
+<p>To confirm that the object has these properties, you can use the <code class="docutils literal notranslate"><span class="pre">print(training_extract)</span></code> command to see in the Console the object’s properties. An example is shown below:</p>
+<p><img alt="An example of attributes listed in the Console of GEE for a feature collection containing the extracted values from the training points" src="_images/feature_collection_with_loandcover_and_bands.png" /></p>
+<p>The FeatureCollection has as many features as the original training data, but note that each feature now has attributes for the spectral bands that you specified with the <code class="docutils literal notranslate"><span class="pre">bands_to_use</span></code> variable.</p>
+<p>Note that this base FeatureCollection can now be used in any of the GEE classifiers.</p>
+</div>
+<div class="section" id="build-a-cart-classifier">
+<h3>3.5 Build a CART classifier<a class="headerlink" href="#build-a-cart-classifier" title="Permalink to this headline">¶</a></h3>
+<p>Next, we use a CART classifier to find the best method to use the spectral values to separate the labels.  The classifiers known as Classification and Regression Trees (CART) partition the spectral data space successive binary splits arranged in a tree form.</p>
+<p>Graphically, classification trees identify lines that successively split the data space to separate the training points into their classes.</p>
+<p><img alt="An example of a classification tree approach to classification. The classifier identifies a value on one of the two axes that best separates the classes, with successive splits further isolating training points into classes." src="_images/CART_classification_cartoon.png" /></p>
+<p>In GEE, this is a simple one-step call:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">trained_CART</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">Classifier</span><span class="p">.</span><span class="nx">smileCart</span><span class="p">()</span>
+  <span class="p">.</span><span class="nx">train</span><span class="p">(</span><span class="nx">training_extract</span><span class="p">,</span> <span class="nx">landcover_labels</span><span class="p">,</span> <span class="nx">bands_to_use</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The variable <code class="docutils literal notranslate"><span class="pre">trained_CART</span></code> is a classifier that then can be applied back to the image from which the <code class="docutils literal notranslate"><span class="pre">.sampleRegion</span></code> function was applied (see next section). Essentially, the classifier is an encapsulation of the mathematical rules that link spectral bands to labels.</p>
+<p>Viewing the object using the <code class="docutils literal notranslate"><span class="pre">print()</span></code> function in GEE, the basic characteristics of the object can be confirmed:</p>
+<p><img alt="The view of the classified object as viewed in the Console of GEE" src="_images/classifier_console.png" /></p>
+</div>
+<div class="section" id="apply-classifier-to-image">
+<h3>3.6 Apply classifier to image<a class="headerlink" href="#apply-classifier-to-image" title="Permalink to this headline">¶</a></h3>
+<p>Once a classifier has been built, the application of the mathematical rules to the original image results in a labeled map.  Each pixel in the spectral image is evaluated against the mathematical rules in the classifier, and the label assigned using those rules.</p>
+<p>Application of the classifier in GEE is a single line of code to create the classified image, and another to add it to the map:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">classified_CART</span> <span class="o">=</span> <span class="nx">l8compositeMasked</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="nx">bands_to_use</span><span class="p">).</span><span class="nx">classify</span><span class="p">(</span><span class="nx">trained_CART</span><span class="p">);</span>
+
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">classified_CART</span><span class="p">,</span> <span class="p">{</span><span class="nx">min</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">max</span><span class="o">:</span><span class="mi">4</span><span class="p">,</span> 
+  <span class="nx">palette</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;25CF1C&#39;</span><span class="p">,</span> <span class="c1">// forest</span>
+  <span class="s1">&#39;2E3FAC&#39;</span><span class="p">,</span> <span class="c1">// water</span>
+  <span class="s1">&#39;EFF215&#39;</span><span class="p">,</span>  <span class="c1">// herbaceous</span>
+  <span class="s1">&#39;FE9D02&#39;</span><span class="p">]},</span> <span class="c1">// Developed</span>
+ 
+  <span class="s1">&#39;CART Classification&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><em><strong>Parsing the code</strong></em></p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">classified_CART</span> <span class="o">=</span> <span class="nx">l8compositeMasked</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="nx">bands_to_use</span><span class="p">).</span><span class="nx">classify</span><span class="p">(</span><span class="nx">trained_CART</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This step applies the classifier object to the image – noting that the image must be the same as the one used to build the <code class="docutils literal notranslate"><span class="pre">trained_CART</span></code> object.</p>
+<p>The output of this process is an image.  Below, we add the image to the map, and specify the color rendering for the classes.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">classified_CART</span><span class="p">,</span> <span class="p">{</span><span class="nx">min</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">max</span><span class="o">:</span><span class="mi">4</span><span class="p">,</span> 
+  <span class="nx">palette</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;25CF1C&#39;</span><span class="p">,</span> <span class="c1">// forest</span>
+  <span class="s1">&#39;2E3FAC&#39;</span><span class="p">,</span> <span class="c1">// water</span>
+  <span class="s1">&#39;EFF215&#39;</span><span class="p">,</span>  <span class="c1">// herbaceous</span>
+  <span class="s1">&#39;FE9D02&#39;</span><span class="p">]},</span> <span class="c1">// Developed</span>
+ 
+  <span class="s1">&#39;CART Classification&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Tip:  Note that we must keep track of the class code numbers to know which order to apply colors.</p>
+<p>Applied to the country of Colombia, the map appears as follows:</p>
+<p><img alt="Image of classified map for all of Colombia" src="_images/CART_classification_countrywide.png" /></p>
+<p>It is worth reiterating that the training points used to build this map were not intended to be useed in creation of high quality maps. Thus, the map created here is simply an exercise, and is not meant as an actual map of land cover cover in Colombia.  However, we will use it to show steps for evaluating and improving it.</p>
+</div>
+<div class="section" id="evaluating-and-improving-maps">
+<h3>3.7 Evaluating and improving maps<a class="headerlink" href="#evaluating-and-improving-maps" title="Permalink to this headline">¶</a></h3>
+<p>Ultimately, the accuracy of the map will be evaluated using a design-based sample with a process described in later modules.  However, it is often worthwhile to evaluate a map visually to find egregious errors and iteratively improve on the map before taking the time to build a robust accuracy sample.</p>
+<p>Several problematic issues are evident in the CART map shown here.</p>
+<p><img alt="Examples of classification problems, including missing pixels and over-prediction of developed areas." src="_images/classification_problems.png" /></p>
+<ol class="simple">
+<li><p>Missing pixels caused by cloudiness
+As noted above, the image composite for this region in 2019 had substantial area where the masking of pixels for clouds resulted in no valid pixels for the image composite. These areas cannot be classified, as they have no spectral values on which to apply the classifier.</p></li>
+<li><p>Large geographic areas classified as “developed”
+In the north of the country on the Guajira Peninsula, the entire area is classified as developed, when in fact the area is dry and sparesely vegetated with little urban development.</p></li>
+<li><p>Substantial areas of developed interspersed with grassland
+In the plains of the northeast of the country, herbaceous classification is interspersed with developed classes.</p></li>
+</ol>
+<div class="section" id="options-for-cloud-masking-issues">
+<h4>3.7.1 Options for cloud masking issues<a class="headerlink" href="#options-for-cloud-masking-issues" title="Permalink to this headline">¶</a></h4>
+<p>When working with passive optical data, cloudiness is a common problem in many parts of the world.  Options to improve image availability include:</p>
+<p>######## 3.7.1.1 Adjust thresholds for masking cloudy images
+In our examples thus far, we have filtered out individual Landsat images with greater than 50% of the area clouded, according to image metadata.  This filtering occurred in our image compositing step:  <code class="docutils literal notranslate"><span class="pre">.filterMetadata('CLOUD_COVER',</span> <span class="pre">'less_than',</span> <span class="pre">50)</span></code>.  This filters out entire Landsat image acquisitions, even if some of the pixels in those images may be useful.</p>
+<ul class="simple">
+<li><p>While it is often advisable to be conservative when filtering clouds, if it leads to large gaps in imagery as observed here, it is worth omitting the filter at the scale of whole images, and instead rely on per-pixel filtering captured in the function called using <code class="docutils literal notranslate"><span class="pre">.map(maskL8srClouds)</span></code>.</p></li>
+<li><p>For the purpose of example, the entire workflow is recreated in the <code class="docutils literal notranslate"><span class="pre">cls_landsat_v1</span></code> script in the section labeled 3.7</p></li>
+<li><p>Omitting the 50% cloudiness metadata filter results in the following map:</p></li>
+</ul>
+<p><img alt="Image of classification without 50% cloud cover threshold" src="_images/CART_image_after_removing_image_cloud_filter.png" /></p>
+<p>This substantially improves the situation, but does not entirely solve it.</p>
+<p>######## 3.7.1.2 Expand the mosaic to include more years of data</p>
+<ul class="simple">
+<li><p>Land cover maps are associated with the year in which imagery was acquired. In the examples thus far, we have focused on imagery from the year 2019. Training data points were also acquired in the year 2019 for this exercise.</p></li>
+<li><p>While constraining both imagery and training data to a single year is laudable, maps with missing values are problematic.  Depending on the intended use of the map, an option to improve the coverage of the map may be to expand the number of years of available for the image compositing.</p></li>
+<li><p>In our example GEE script <code class="docutils literal notranslate"><span class="pre">cls_landsat_v1</span></code>, we have provided an example of how additional years of imagery can be merged to an image collection before image mosaicking.  The brute-force approach is to simply build two image collections and then use the GEE method <code class="docutils literal notranslate"><span class="pre">.merge()</span></code> to combined them.  Hence:</p></li>
+</ul>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Build a composite from 2019.  </span>
+<span class="c1">// Note that we use the &quot;l8&quot; collection already identified </span>
+<span class="c1">// at the very top of this script.</span>
+
+<span class="kd">var</span> <span class="nx">startDate</span> <span class="o">=</span> <span class="s1">&#39;2019-01-01&#39;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">endDate</span> <span class="o">=</span> <span class="s1">&#39;2019-12-31&#39;</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">l8compositeMasked2019</span> <span class="o">=</span> <span class="nx">l8</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">maskL8srClouds</span><span class="p">);</span>
+
+<span class="c1">// Now add 2018</span>
+
+<span class="kd">var</span> <span class="nx">startDate</span> <span class="o">=</span> <span class="s1">&#39;2018-01-01&#39;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">endDate</span> <span class="o">=</span> <span class="s1">&#39;2018-12-31&#39;</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">l8compositeMasked2018</span> <span class="o">=</span> <span class="nx">l8</span><span class="p">.</span><span class="nx">filterBounds</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">filterDate</span><span class="p">(</span><span class="nx">startDate</span><span class="p">,</span><span class="nx">endDate</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">maskL8srClouds</span><span class="p">);</span>
+          
+<span class="c1">// Now combine and get the median() value</span>
+
+<span class="kd">var</span> <span class="nx">two_year_composite</span> <span class="o">=</span> <span class="nx">l8compositeMasked2019</span>
+                <span class="p">.</span><span class="nx">merge</span><span class="p">(</span><span class="nx">l8compositeMasked2018</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">median</span><span class="p">()</span>
+                <span class="p">.</span><span class="nx">clip</span><span class="p">(</span><span class="nx">country</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The resultant image has substantially fewer gaps.</p>
+<p><img alt="Image showing two-year composite" src="_images/comparing_two_year_composite.png" /></p>
+<p>There are still gaps near the coast and at high elevation. It maybe neccessary to increase to a third year, or to consider an approach to bring in other sources of imagery (see below).</p>
+<p>However, using the two-year composite and re-running the CART classifier, the spatial pattern of classes shows fewer image artifacts. It</p>
+<p><img alt="Classification with two-year composite" src="_images/cart_classifier_with_two_year_composite.png" /></p>
+</div>
+<div class="section" id="handling-classification-errors">
+<h4>3.7.2 Handling classification errors<a class="headerlink" href="#handling-classification-errors" title="Permalink to this headline">¶</a></h4>
+<p>Closer scrutiny of two areas confirms that the “developed” class is being assigned to pixels that are either herbaceous or even barren.  This is evident, even with the two-year compositing identified in 3.7.1.2. Although our training samples are not intended to be an actual source for robust mapping, we can use this example of misclassification to illustrate how it can be handled.</p>
+<p><img alt="The false-color image (SWIR band in red, NIR band in green, red band in blue) on the left shows areas of sparse herbaceous vegetation with substantial soil or sand visible as well. These bright areas occupy a similar portion of the spectral space as the developed class, resulting in a classification with an abundance of labels of developed." src="_images/figure_zoom_of_guajira.png" /></p>
+<p>Similarly, a close evaluation of the plains in the east-northeast of the country near the Meta River shows an overclassification of developed area, apparently caused by areas that are sparsely vegetated.</p>
+<p><img alt="Overclassification of the &quot;developed&quot; class near the Meta River in Northeastern Colombia. Colors and interpretation as in prior figure" src="_images/figure_overclass_developed_plains.png" /></p>
+<p>######## 3.7.2.1. Options for handling misclassification errors</p>
+<p>To understand how to fix misclassification, one must have an appreciation of the cause: Misclassification occurs when a pixel of one class lands in the spectral data space that the classifier has assigned to a different class.</p>
+<p>Using the simple cartoon shown earlier for the CART classifier, we can envision at least two cases where this can occur.</p>
+<p>Case 1:  A new pixel is encountered that lands in the part of spectral space already occupied by members of a different class.  This situation can occur when the two classes do not have sufficient spectral differences to be separated, or when density of training points is sparse enough that such apparently different lobes of spectral space are not sufficiently bounded.</p>
+<p>Case 2: A new pixel is encountered in a region of spectral space that does not have training samples, but which must be assigned a label by virtue of the splits identified by thte training samples that did exist.</p>
+<p><img alt="Two cases of misclassification. In Case 1, a new pixel (noted with a square symbol) that should be labeled with the Orange class lands in the midst of representatives of the green class. In Case 2, a new pixel of the Orange class lands outside the domain of classes already defined, but because it is on the &quot;Green side&quot; of the first split, it gets labeled as green." src="_images/misclassification.png" /></p>
+<p>At least three remedies exist for Case 1:</p>
+<ul class="simple">
+<li><p>Provide more dimensionality to the spectral data space.  Points that cannot be separated in a 2-d plane may be separable along a third axis, for example.  This requires adding spectral information at the beginning of the classification process.  The chance for success improves if that new dimension of data is thought to capture some characteristic that an expert might identify as separating the confused types.  For example, adding in a component that captures seasonality may separate two forest types that differ in the timing or duration of leaf condition.</p></li>
+<li><p>Obtain more training points in the conditions that are causing confusion.  By adding more points in parts of the spectral space where confusion is occurring, the classifier has a better chance of separating that group into the appropriate class.</p></li>
+<li><p>Apply a more flexible classifier to the same dataset.  A CART is a fairly simple classifier. It is possible that a more advanced classifer could achieve better rsults with the same training data.  See Section 3.8 for an example.</p></li>
+</ul>
+<p>Case 2 is a classic example of extending a statistical model outside the bounds for which it was built.  The best remedy for this case is to obtain omre sample points in the region where confusion occurs, with the goal of extending the domain of the training.</p>
+</div>
+</div>
+<div class="section" id="applying-a-different-supervised-classifier-random-forests">
+<h3>3.8 Applying a different supervised classifier: Random Forests<a class="headerlink" href="#applying-a-different-supervised-classifier-random-forests" title="Permalink to this headline">¶</a></h3>
+<p>The Random Forests algorithm (Breiman 2001:  “Random Forests”. Machine Learning. 45 (1): 5–32) builds on the concepts of decision trees, but adds strategies to make them more powerful. Although a thorough treatment of Random Forests (RF) is beyond the scope of this training, a brief overview is presented here.</p>
+<p>The RF algorithm generates many decision trees (many “trees” make a “forest”), each with slightly different randomizations of both training data and predictor (here, spectral) data. Each split in a given decision tree is done with a subset of the training data and the spectral values.  This improves robustenss to outlier training points or predictor varriables.  When these many decision trees are built and then applied to the imagery, each pixel receives a label from each of the trees;  the final label is often taken as the one that occurs in the majority of trees for that pixel.</p>
+<p>Because the extraction of training data is the same for all classifiers in GEE, we need only build the new classifier from the prior training data, and then apply that to the image.  We will use the two-year composite image from section 3.7.</p>
+<p>First, we build the classifier:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">trained_RF</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">Classifier</span><span class="p">.</span><span class="nx">smileRandomForest</span><span class="p">(</span><span class="mi">250</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">train</span><span class="p">(</span><span class="nx">training_extract_v3</span><span class="p">,</span> <span class="nx">landcover_labels</span><span class="p">,</span> <span class="nx">bands_to_use</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>And then apply it to the image:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">classified_RF</span> <span class="o">=</span> <span class="nx">two_year_composite</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="nx">bands_to_use</span><span class="p">).</span><span class="nx">classify</span><span class="p">(</span><span class="nx">trained_RF</span><span class="p">);</span>
+
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">classified_RF</span><span class="p">,</span> <span class="p">{</span><span class="nx">min</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">max</span><span class="o">:</span><span class="mi">4</span><span class="p">,</span> 
+  <span class="nx">palette</span><span class="o">:</span><span class="p">[</span><span class="s1">&#39;25CF1C&#39;</span><span class="p">,</span> <span class="c1">// forest</span>
+  <span class="s1">&#39;2E3FAC&#39;</span><span class="p">,</span> <span class="c1">// water</span>
+  <span class="s1">&#39;EFF215&#39;</span><span class="p">,</span>  <span class="c1">// herbaceous</span>
+  <span class="s1">&#39;FE9D02&#39;</span><span class="p">]},</span> <span class="c1">// Developed</span>
+ 
+  <span class="s1">&#39;RF Classification&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>An inspection of some of the areas noted above suggests that the RF algorithm may be more robust to the misclassification problems, but that they still do exist.</p>
+<p><img alt="The result of the random forests classifier applied to the two-year composite for the same area shown above.  Note the substantial reduction in areas classified as developed." src="_images/randomforests_classifier.png" /></p>
+<p>The area on the Guajira peninsula still remains largely misclassified.  This suggests that the training data to not adequately sample the spectral space of this class, and that more training data collected in this region would be beneficial.</p>
+<p><img alt="The Random Forests classification of the Guajira peninsula, showing that the developed class remains overpredicted." src="_images/guajira_rf.png" /></p>
+</div>
+</div>
+<div class="section" id="unsupervised-classification">
+<h2>4.0 Unsupervised classification<a class="headerlink" href="#unsupervised-classification" title="Permalink to this headline">¶</a></h2>
+<p>A key challenge in supervised classification is to define classes that can be adequately separated in the spectral space of the imagery.  If the definitions of classes need not be strictly defined ahead of time, it can be possible to let the imagery find groupings (clusters) in the spectral space, and then attempt to attach descriptive labels to those clusters.  Because labeled training data are not used to guide this process, it is referred to as “unsupervised” classification.</p>
+<div class="section" id="the-k-means-algorithm">
+<h3>4.1 The <em>k</em>-means algorithm<a class="headerlink" href="#the-k-means-algorithm" title="Permalink to this headline">¶</a></h3>
+<p>Clustering algorithms are numerous.  The interested reader may consult</p>
+<p>https://en.wikipedia.org/wiki/Cluster_analysis or other generic introductions. In remote sensing, a commonly used approach is the <em>k</em>-means clusterer, implemented on GEE as the <code class="docutils literal notranslate"><span class="pre">ee.Clusterer.wekaKMeans</span></code> function.</p>
+<p>The <em>k</em>-means approach uses an iterative regrouping strategy to identify groups of pixels near each other in spectral space. The user supplies a desired number (<em>k</em>) of clusters, and the algorithm then distributes that number of seed points into the spectral space. These seed locations are considered starting points of the eventual classes. The location of these seed points defaults to a random placement in the GEE implementation of the algorithm. A large sample of pixels in the image is then assigned to its closest seed point, and the mean spectral value of those pixels calculated.  That mean value is akin to a center of mass of the points, and is known as the centroid.  Unless the points that were nearest to a seed point happened to be symmetrically arranged around it, this calculated centroid is going to be moved slightly from where it started.  All of the pixels in the image are now  re-attached to centroids – often some pixels change centroids because of the movement of the centroids. When the new group of pixels is used for centroid calculation, the new centroid will move again.  The process is repeated until the centroids remain relatively stable and few pixels change from class to class on subsequent iterations.</p>
+</div>
+<div class="section" id="application-of-k-means-in-gee">
+<h3>4.2 Application of <em>k</em>-means in GEE<a class="headerlink" href="#application-of-k-means-in-gee" title="Permalink to this headline">¶</a></h3>
+<p>Application in GEE follows the same generaly workflow as that used for supervised classification, except that the training samples are generated randomly rather than taken from an interpreted training set.  These are not strictly “training” data, since they do not have labels.  Rather, they are a simply a random subsample of the spectral data space.</p>
+<p>The code for implementation is as follows.</p>
+<p>First, the random sample locations are chosen.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">randomtraining</span> <span class="o">=</span> <span class="nx">two_year_composite</span><span class="p">.</span><span class="nx">sample</span><span class="p">({</span>
+    <span class="nx">region</span><span class="o">:</span> <span class="nx">country</span><span class="p">,</span>
+    <span class="nx">scale</span><span class="o">:</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="nx">numPixels</span><span class="o">:</span> <span class="mi">500</span><span class="p">,</span>
+    <span class="nx">tileScale</span><span class="o">:</span> <span class="mi">10</span>
+  <span class="p">});</span>
+</pre></div>
+</div>
+<p>Then, the <em>k</em>-means algorithm is applied to the sample points chosen.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">numberOfClasses</span> <span class="o">=</span><span class="mi">10</span>
+<span class="kd">var</span> <span class="nx">clusterer</span> <span class="o">=</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">Clusterer</span><span class="p">.</span><span class="nx">wekaKMeans</span><span class="p">(</span><span class="nx">numberOfClasses</span><span class="p">).</span><span class="nx">train</span><span class="p">(</span><span class="nx">randomtraining</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Finally, the clusterer is applied to the image.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">unsup</span> <span class="o">=</span> <span class="nx">two_year_composite</span><span class="p">.</span><span class="nx">cluster</span><span class="p">(</span><span class="nx">clusterer</span><span class="p">);</span>
+<span class="nx">Map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">unsup</span><span class="p">.</span><span class="nx">randomVisualizer</span><span class="p">(),</span> <span class="p">{},</span> <span class="s1">&#39;10 Clusters&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the colors of the classes are not related to any meaningful quantity, so a random visualizer is used.  The colors of the classes are not meaningful, but simply are used to distinguish the classes.</p>
+<p><img alt="A classified output from the k-means unsupervised classification algorithm.  Note that the colors are randomly assigned, and thus have no inherent meaning." src="_images/figure_kmeans_examples.png" /></p>
+</div>
+<div class="section" id="evaluation">
+<h3>4.3 Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h3>
+<p>Once the clustered image is created, an expert user can evaluate whether the choices used are effective, and can begin assigning land cover labels to the clusters. This is necessarily a more subjective strategy requiring understanding of both the landscape and the spectral data space.</p>
+<p>The first evaluation criterion is simply whether the spatial pattern of the clusters follows the spatial patterns of interest in the imagery.  If there are too few clusters, then boundaries between distinct zones on the landscape will be straddled by a single cluster.  conversely, if there are too many clusters, visually-homogenous zones will be split.</p>
+<p>The second (and related) criterion is whether the clusters can be assigned labels that are consisten with an expert’s knowledge of the landscape.</p>
+<p>Remedies for too many or too few classes are to simply run the classification again, or take more advanced steps of subsetting the image into component classes and re-running the classiifer on the subset.</p>
+</div>
+<div class="section" id="advantages-and-disadvantages">
+<h3>4.4 Advantages and disadvantages<a class="headerlink" href="#advantages-and-disadvantages" title="Permalink to this headline">¶</a></h3>
+<p>Supervised classification presumes which classes are interesting or relevant, but rarely are those class labels constructed according to how well they will be captured in the spectral data space.  Thus, the supervised approach may try to make a spectral data space separate classes that are not separable.</p>
+<p>Unsupervised classification depends entirely on the imagery, and on separability of classes.  Thus, it may better represent patterns on the landscape.  But the labeling of those classes may not be useful for an end user.  Moreover, the method is entirely dependent on the data space, and thus a repetition of the same basic steps on a different set of images for the same location could very well lead to a different map.</p>
+</div>
+</div>
+<div class="section" id="faqs">
+<h2>5.0 FAQs<a class="headerlink" href="#faqs" title="Permalink to this headline">¶</a></h2>
+<p><em>What if there are some areas that are almost always cloudy, no matter how many years of imagery I have?</em></p>
+<p>There are several options:</p>
+<ul class="simple">
+<li><p>If the areas take up a small percentage of the overall map, and if the purpose of the map is to estimate total area in different land cover classes, then it may be possible to consider these pixels as the class “unknown” and explicitly consider it when building accuracy tables and area estimates later on.  These will simply add greater uncertainty to the estimates of area.</p></li>
+<li><p>Consider using another source of passive optical imagery instead of or in addition to your original image. For example, it could be possible to blend together Sentinel-2 imagery with Landsat imagery to include the odds of finding cloud-free pixel observations.</p></li>
+<li><p>Consider using imagery from SAR (synthetic aperture radar) sensors that can map the land surface even in the presence of the clouds.  All sensor types have their own issues to consider when building maps, however, and radar imagery is no exception.  Please see the SAR Handbook [cite] for an in-depth treatment of SAR imagery.</p></li>
+</ul>
+<p><em>Once I build a classifier in one year, can I then apply it to imagery in other years to make annual maps?</em></p>
+<p>The short answer is that this is not recommended.  The spectral data space of your training imagery is particular to the conditions under which it was recorded: per-pixel spectral values vary due to the vagaries of which dates of pixel had clear views, the degree to which the atmospheric correction was acccurate, the seasonality of the vegetation in one year versus another, etc.  To a first approximation, we hope that the overall link between spectral data and ground conditions is robust, but at the margins of classess, or in classes that have a high degree of variabilty from year to year, the differences can be quite dramatic.  There are two basic ways to approach this:  1) build new classifications in each year or 2) use a tool to stabilize spectral data across time.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Open-MRV</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="composite.html">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1.3 Land Cover and Land Use Classification</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="composite.html" title="previous chapter">1.1 Image mosaic/composite creation for Landsat and Sentinel-2 in Google Earth Engine</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Multiple Contributors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/classification.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

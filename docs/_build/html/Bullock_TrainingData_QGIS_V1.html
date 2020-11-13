@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>title: Module 1.2.1 Training Data Collection Using QGIS toc: true &#8212; Open-MRV v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Open-MRV Tutorials" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <hr class="docutils" />
+<div class="section" id="title-module-1-2-1-training-data-collection-using-qgis-toc-true">
+<h1>title: Module 1.2.1 Training Data Collection Using QGIS
+toc: true<a class="headerlink" href="#title-module-1-2-1-training-data-collection-using-qgis-toc-true" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="background">
+<h1>1 Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h1>
+<p>Training data is instrumental to supervised image classification. The training dataset is a labeled set of data that is used to inform or “train” a classifier. The trained classifier can then be applied to new data to create a classification. For example, land cover training data will contain examples of each class in the study’s legend. Based on these labels, the classifier can predict the most likely land cover class for each pixel in an image. This is an example of a categorical classification and the training labels are therefore categorical. By contrast, a continuous variable (e.g. percent tree cover) can be predicted using continuous training labels.</p>
+<p>This tutorial will demonstrate how to collect categorical training data for land cover classification using QGIS. Users should adjust the various components to match their project objectives. Here, the process is demonstrated for the country of Colombia and for a simple legend of four land cover classes: Forest, Water, Herbaceous, and Developed.</p>
+<div class="section" id="qgis">
+<h2>1.1 QGIS<a class="headerlink" href="#qgis" title="Permalink to this headline">¶</a></h2>
+<p>Quantum GIS (QGIS) is an open source GIS that runs on Windows, Linux, and Mac OS X. Users should consult the <a class="reference external" href="https://qgis.org/en/site/forusers/alldownloads.html">QGIS webpage</a> for background information and installation instructions. This tutorial is based on the longterm release <a class="reference external" href="https://docs.qgis.org/3.10/en/docs/user_manual/">Version 3.10.10</a>. For the core features of this tutorial, users will only need QGIS installed and an internet connection.</p>
+</div>
+</div>
+<div class="section" id="learning-objectives">
+<h1>2 Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline">¶</a></h1>
+<p>At the end of this exercise, you will be able to:</p>
+<ul class="simple">
+<li><p>Create a new shapefile layer in QGIS.</p></li>
+<li><p>Load multiple sources of high resolution imagery to use as reference.</p></li>
+<li><p>Collect training data for a categorical classification.</p></li>
+</ul>
+<div class="section" id="pre-requisites-for-this-module">
+<h2>2.1 Pre-requisites for this module<a class="headerlink" href="#pre-requisites-for-this-module" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>QGIS concepts</p>
+<ul>
+<li><p>Installation</p></li>
+<li><p>Creating, saving, and loading a project</p></li>
+<li><p>Installing and using plugins</p></li>
+</ul>
+</li>
+<li><p>Remote sensing concepts</p>
+<ul>
+<li><p>Basic understanding on theories involved in image classification.</p></li>
+<li><p>Defining a thematic legend</p></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="training-data-collection">
+<h1>3. Training Data Collection<a class="headerlink" href="#training-data-collection" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>3.1 Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The process for collecting training data in QGIS are detailed in the steps below. The process can be generally described as three primary steps:</p>
+<ol class="simple">
+<li><p>Creating a new shapefile layer for storing the training data.</p></li>
+<li><p>Loading a basemap using a QGIS plugin.</p></li>
+<li><p>Collecting the training data by manually defining training points.</p></li>
+</ol>
+<p><img alt="_images/diagram.JPG" src="_images/diagram.JPG" /></p>
+</div>
+<div class="section" id="creating-a-new-layer">
+<h2>3.2 Creating a new layer<a class="headerlink" href="#creating-a-new-layer" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial will demonstrate how to create training data that are point geometries. A similar process can be used with polygon data, but keep in mind that it is generally recommended to have more diverse training regions to minimize the effect of spatial autocorrelation.</p>
+<p>To start, we will need to define a new shapefile layer.</p>
+<ol class="simple">
+<li><p>Select <em>Layer</em> -&gt; <em>Create Layer</em> -&gt; <em>New Shapefile Layer…</em>.</p></li>
+<li><p>Choose a filename to save your training data (in the example below I use the name ‘training_data_colombia_v1.shp’</p></li>
+<li><p>For <em>Geometry type</em> choose <em>Point</em>.</p></li>
+<li><p>Choose EPSG:4326 - WGS 84 for the projection.</p></li>
+<li><p>Delete the ‘id’ field by selecting it in the <em>Fields List</em> and selecting <em>Remove Field</em>.</p></li>
+<li><p>Add a new field of type <em>Whole number</em> named ‘class’ by selecting <em>Add to fields list</em>.</p></li>
+</ol>
+<p>Your panel should look like this:</p>
+<p><img alt="_images/new_shapefile.JPG" src="_images/new_shapefile.JPG" /></p>
+</div>
+<div class="section" id="load-baselayers">
+<h2>3.3 Load baselayers<a class="headerlink" href="#load-baselayers" title="Permalink to this headline">¶</a></h2>
+<p>Critical to the collection of training data is reference data, and for most purposes it is sufficient to use high-resolution imagery. Two critical factors in the selection of reference data are:</p>
+<ul class="simple">
+<li><p>The target classes can be distinguished through visible interpretation.</p></li>
+<li><p>The time of the reference imagery overlaps the input data used for classification.</p></li>
+</ul>
+<p>Luckily, there are numerous sources of high resolution reference imagery available directly within QGIS. The specific imagery to use will depend on your study period and region, but in general it is recommended to use as much data as possible.</p>
+<p>The following plugins offer access to reference imagery. Each plugin works with QGIS Version 3.1.10. However, users of this tutorial should follow the instructions from the plugin creators to ensure proper installation.</p>
+<p>Users should consider the options below and decide a source of reference data that matches the time period and geographic extent of your study region. Here, the process is demonstrated for Colombia and for the year 2018. This year was chosen because it overlaps the reference data and is sure to be in the middle of data used for analysis.</p>
+<div class="section" id="quickmap-services">
+<h3>3.3.1 QuickMap Services<a class="headerlink" href="#quickmap-services" title="Permalink to this headline">¶</a></h3>
+<p><br /><br /><strong>Who</strong>: <a class="reference external" href="https://nextgis.com/">NextGIS</a></p>
+<p><strong>What</strong>: High quality basemaps (Google, ESRI, Mapbox, etc)</p>
+<p><strong>When</strong>: Varies</p>
+<p>QuickMap Services is a service for accessing and sharing geospatial data. This plugin allows access to the full collection of data including high-resolution basemaps from Google, ESRI, and Mapbox. Most of this data are compiled from various sources, meaning the acquisition date for a specific location might not be known. However, these are high quality datasets and are recommended to be used for reference to supplement the imagery described below.</p>
+<p><strong>To use:</strong></p>
+<ol class="simple">
+<li><p>Add the QuickMap Services plugin by going to <em>Plugins</em> and <em>Manage and Install Plugins…</em> and searching <em>QuickMapServices</em> and clicking the <em>Install Plugin</em> button.</p></li>
+<li><p>Open the QMS search panel by going to the <em>Web</em> toolbar -&gt; <em>QuickMapServices</em> -&gt;  <em>Search QGMS Panel</em>.</p></li>
+<li><p>In the panel that appears on the right of the screen, search for ‘Satellite’ and choose a dataset by selecting <em>Add</em>. The basemap will be added to the map.</p></li>
+</ol>
+<p><img alt="_images/quickservice.JPG" src="_images/quickservice.JPG" /></p>
+</div>
+<div class="section" id="planet-explorer">
+<h3>3.3.2. Planet Explorer<a class="headerlink" href="#planet-explorer" title="Permalink to this headline">¶</a></h3>
+<p><br /><br /><strong>Who</strong>: <a class="reference external" href="https://www.planet.com/">Planet</a></p>
+<p><strong>What</strong>: Daily imagery, monthly mosaics, biannual mosaics</p>
+<p><strong>When</strong>: After 2016</p>
+<p>The Planet constellation of satellites offer daily high-resolution imagery in 3-4 spectral bands. While the data archive is not fully open access, a username and password allows you to browse daily imagery and view reduced-quality preview imagery. Furthermore, the Norway Ministry of Climate and Environment <a class="reference external" href="https://www.planet.com/pulse/planet-ksat-and-airbus-awarded-first-ever-global-contract-to-combat-deforestation/">reached an agreement</a> with Planet, Airbus, and Konsberg Satellite Services to provide access to high-resolution imagery across the tropics. At the time of writing, tools for accessing this data are in early stages of development. However, one way that Planet is supporting access of this data is through the QGIS Plugin <em>Planet Explorer</em>.</p>
+<p><strong>To use</strong>:</p>
+<ol class="simple">
+<li><p>Detailed instructions for installing the plugin can be found <a class="reference external" href="https://developers.planet.com/docs/integrations/qgis/quickstart/">on the Planet webpage</a>.</p></li>
+<li><p>Add the plugin panel by going to <em>Web</em> -&gt; <em>Planet Explorer</em> -&gt; <em>Planet Explorer</em>.</p></li>
+<li><p>Select <em>Mosaic Series</em> in the plugin panel.</p></li>
+<li><p>Double click on one of the biannual or monthly mosaics to add it to the map.</p></li>
+</ol>
+<p><img alt="_images/planetexplorer.JPG" src="_images/planetexplorer.JPG" /></p>
+</div>
+<div class="section" id="google-earth-engine">
+<h3>3.3.3 Google Earth Engine<a class="headerlink" href="#google-earth-engine" title="Permalink to this headline">¶</a></h3>
+<p><br /><br /><strong>Who</strong>: <a class="reference external" href="https://earthengine.google.com/">Google Earth Engine</a> and Gennadii Donchyts.</p>
+<p><strong>What</strong>: Most open access earth observation data (e.g. Landsat, Sentinel and MODIS).</p>
+<p><strong>When</strong>: As early as 1972 for Landsat.</p>
+<p>Google Earth Engine (GEE) is a cloud platform for analyzing geospatial data. Access to GEE is provided through a Javascript and Python API. While Google does not currently provide a QGIS plugin, recently Gennadii Donchyts released a beta plugin based on the Python API. This plugin allows for the incredible processing power and data storage of GEE with the user interface of QGIS. However it is also experimental and users should consult the <a class="reference external" href="https://github.com/gee-community/qgis-earthengine-plugin">Github repository</a> prior to use.</p>
+<p><strong>To use</strong>:</p>
+<ol class="simple">
+<li><p>Install the plugin using with the <a class="reference external" href="https://gee-community.github.io/qgis-earthengine-plugin/">User Guide</a>.</p></li>
+<li><p>Add the Python console by going to <em>Plugins</em> -&gt; <em>Python Console</em></p></li>
+<li><p>Browse example code in <a class="reference external" href="https://github.com/gee-community/qgis-earthengine-plugin/tree/master/examples">the plugin repository</a>. It’s also worth getting familiar with <a class="reference external" href="https://developers.google.com/earth-engine/guides">Google Earth Engine</a> if you are a new user. This tutorial does not cover GEE basics and users should consult <a class="reference external" href="https://developers.google.com/earth-engine/guides">GEE documentation</a> for advanced usage.</p></li>
+<li><p>In the Python Console, make sure Earth Engine is installed correctly with the following code:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ee</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ee</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="s1">&#39;The plugin is working!&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getInfo</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Your console should look like this:</p>
+<p><img alt="_images/gee1.JPG" src="_images/gee1.JPG" /></p>
+<ol class="simple">
+<li><p>Load the <em>Map</em> function from the ee_plugin module:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ee_plugin</span> <span class="kn">import</span> <span class="n">Map</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Set the map view to the boundary of Colombia.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">countries</span> <span class="o">=</span> <span class="n">ee</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="s2">&quot;USDOS/LSIB_SIMPLE/2017&quot;</span>
+<span class="n">colombia</span> <span class="o">=</span> <span class="n">countries</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">ee</span><span class="o">.</span><span class="n">Filter</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s1">&#39;country_na&#39;</span><span class="p">,</span> <span class="s1">&#39;Colombia&#39;</span><span class="p">))</span>
+<span class="n">Map</span><span class="o">.</span><span class="n">centerObject</span><span class="p">(</span><span class="n">colombia</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Create a Sentinel-2 composite for 2019 and add it to the map.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">s1_collection</span> <span class="o">=</span> <span class="n">ee</span><span class="o">.</span><span class="n">ImageCollection</span><span class="p">(</span><span class="s2">&quot;COPERNICUS/S2_SR&quot;</span><span class="p">)</span>
+
+<span class="n">s1_composite</span> <span class="o">=</span> <span class="n">s1_collection</span><span class="o">.</span><span class="n">filterBounds</span><span class="p">(</span><span class="n">colombia</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">filterDate</span><span class="p">(</span><span class="s1">&#39;2019-01-01&#39;</span><span class="p">,</span><span class="s1">&#39;2019-12-31&#39;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">median</span><span class="p">()</span>
+
+<span class="n">vis</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bands&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;B4&#39;</span><span class="p">,</span> <span class="s1">&#39;B3&#39;</span><span class="p">,</span> <span class="s1">&#39;B2&#39;</span><span class="p">],</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">1250</span><span class="p">}</span>
+
+<span class="n">Map</span><span class="o">.</span><span class="n">addLayer</span><span class="p">(</span><span class="n">s1_composite</span><span class="p">,</span> <span class="n">vis</span><span class="p">,</span> <span class="s1">&#39;Sentinel 2 2019&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You should see a very cloudy image added to the map</p>
+<p><img alt="_images/gee2.JPG" src="_images/gee2.JPG" /></p>
+<ol class="simple">
+<li><p>Now let’s try it again when applying the cloud mask prior to making the mosaic:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">maskS2clouds</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">image</span><span class="o">.</span><span class="n">updateMask</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;QA60&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="n">s1_composite_masked</span> <span class="o">=</span> <span class="n">s1_collection</span><span class="o">.</span><span class="n">filterBounds</span><span class="p">(</span><span class="n">colombia</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">filterDate</span><span class="p">(</span><span class="s1">&#39;2019-01-01&#39;</span><span class="p">,</span><span class="s1">&#39;2019-12-31&#39;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">maskS2clouds</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">median</span><span class="p">()</span>
+
+<span class="n">Map</span><span class="o">.</span><span class="n">addLayer</span><span class="p">(</span><span class="n">s1_composite_masked</span><span class="p">,</span> <span class="n">vis</span><span class="p">,</span> <span class="s1">&#39;Sentinel 2 2019 Masked&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="_images/gee3.JPG" src="_images/gee3.JPG" /></p>
+</div>
+</div>
+<div class="section" id="collect-training-data">
+<h2>3.4 Collect training data<a class="headerlink" href="#collect-training-data" title="Permalink to this headline">¶</a></h2>
+<p>Once you have decided on reference imagery then it is time to start collecting training data. Going class by class, navigate your study region collecting point data. Here are a few considerations:</p>
+<ul class="simple">
+<li><p>Training data should be representative of your entire study region. This means that collecting more data across the study area is better than a few large training areas.</p></li>
+<li><p>Be sure to include examples on the edge of class boundaries, as these areas will be most challenging to distinguish in the classification stage.</p></li>
+<li><p>There is no magic number for an adequant number of training points. Be prepared for this to be an interative process in which you collect training data, perform your analysis, and then collect more training data to address misclassification errors.</p></li>
+<li><p>Take your time - this dataset will be invaluable to your research and can be to others as well.</p></li>
+</ul>
+<ol class="simple">
+<li><p>Select the training data layer in the <em>Layers</em> panel.</p></li>
+<li><p>Enable layer editing by selecting the button that looks like a pencil, <em>Toggle Editing</em>
+<img alt="_images/toggle.JPG" src="_images/toggle.JPG" /></p></li>
+<li><p>Define a numeric class code. Here, we will use the following code:</p></li>
+</ol>
+<ul class="simple">
+<li><p>1 Forest</p></li>
+<li><p>2 Water</p></li>
+<li><p>3 Herbaceous</p></li>
+<li><p>4 Developed</p></li>
+</ul>
+<ol class="simple">
+<li><p>Starting with the Forest class, click on the map to add a training point. In the panel that shows on the map you will have the option to fill out the <em>class</em> field for the point you just added. Since we are starting with Forest, use the class code 1. Based on the class codes above, you should use 2 for Water, 3 for Herbaceous, and 4 for developed.
+<img alt="_images/point1.JPG" src="_images/point1.JPG" /></p></li>
+<li><p>Select <em>OK</em> to save the training point.</p></li>
+<li><p>Repeat for many Forest samples throughout your study region. It is advised to save the layer during the process by selecting the <em>Save Layer Edits</em> button.
+<img alt="_images/save.JPG" src="_images/save.JPG" /></p></li>
+<li><p>Continue this process for each target map class.</p></li>
+<li><p>Select the <em>Toggle Editing</em> button to stop editing the layer.</p></li>
+</ol>
+</div>
+<div class="section" id="visualizing-training-data">
+<h2>3.5 Visualizing training data<a class="headerlink" href="#visualizing-training-data" title="Permalink to this headline">¶</a></h2>
+<p>Once you have collected training data for each class, it helps to style them to see the distribution across the study area. Ideally, you want to have training points that are representative of the variability in the classes. Here, that means that we want to have enough forest, water, herbaceous, and developed points to ensure they fully represent these classes across Colombia.</p>
+<ol class="simple">
+<li><p>Right class on the layer in the <em>Layer</em> panel and select <em>Properties</em></p></li>
+<li><p>On the left side of the <em>Properties</em> panel, select <em>Control feature symbology</em>
+<img alt="Control feature symbology" src="_images/symbology.JPG" /></p></li>
+<li><p>Select <em>Categorized</em> for the symbol type.</p></li>
+<li><p>Under <em>Value</em> select the attribute containing the class label, in this case it is <em>class</em></p></li>
+<li><p>Select <em>Classify</em> to populate the symbology table. Optionally change the colors to your choosing.</p></li>
+<li><p>Check the <em>Legend</em> values to match our legend. Your panel should look like this:</p></li>
+</ol>
+<p><img alt="_images/style.JPG" src="_images/style.JPG" /></p>
+<ol class="simple">
+<li><p>Select <em>OK</em> to apply the style.</p></li>
+<li><p>Take some time to look at your sample and ensure there are not any major “gaps” in training data.</p></li>
+</ol>
+<p><img alt="_images/samples.JPG" src="_images/samples.JPG" /></p>
+</div>
+<div class="section" id="adding-unique-id">
+<h2>3.6 Adding unique ID<a class="headerlink" href="#adding-unique-id" title="Permalink to this headline">¶</a></h2>
+<p>It is useful to have a unique identifier for each training point. This can be added to the layer Attribute Table.</p>
+<ol class="simple">
+<li><p>Right click on the layer name in the <em>Layer</em> panel and selecting <em>Open Attribute Table</em>.</p></li>
+<li><p>Add a new column by selecting the <em>Open field calculator</em>.
+<img alt="_images/attribute.JPG" src="_images/attribute.JPG" /></p></li>
+<li><p>Under <em>Output field name</em> write ‘ID’.</p></li>
+<li><p>Double click on the selector ‘row_number’. Your panel should look like this:
+<img alt="_images/id.JPG" src="_images/id.JPG" /></p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="frequently-asked-questions">
+<h1>4. Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
+<p><strong>Why are we using point geometries rather than polygons?</strong></p>
+<p>Polygon data can also be used as training data, but keep in mind that spatial autocorrelation will result in redundant information derived from each polygon. We therefore recommend collecting point samples that are representative of the entirety of the data rather than a few polygons.</p>
+<p><strong>How should I choose what data to use as reference?</strong></p>
+<p>The reference data should overlap in time and space with the data used in your analysis. If there are multiple data sources meeting this criteria, then the user should choose the data they find easiest to interpret based on their classification legend.</p>
+<p><strong>Does training data need to be derived under a probability-based sampling design?</strong></p>
+<p>No, there is no need to obtain training data using a probability-based design. However, if training data was created this way (e.g. an interpreted simple random sample), there is no reason it cannot be used for classification.</p>
+<p><strong>How many points do I need for each class?</strong></p>
+<p>There is no magic number for the number of training points for each class. It is generally recommended to use an iterative process, in which additional training data is added after performing a classification, then the classification is created again the process repeats until the results are deemed adequate.</p>
+<p><strong>Can training data be split to use part for validation?</strong></p>
+<p>If the training data were collected opportunistically, or in other words <em>not</em> using a probability sample, then it is generally not recommended to use it for validation since it will introduce bias.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Open-MRV</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">title: Module 1.2.1 Training Data Collection Using QGIS
+toc: true</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#background">1 Background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#qgis">1.1 QGIS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#learning-objectives">2 Learning Objectives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pre-requisites-for-this-module">2.1 Pre-requisites for this module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#training-data-collection">3. Training Data Collection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">3.1 Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-new-layer">3.2 Creating a new layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#load-baselayers">3.3 Load baselayers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#collect-training-data">3.4 Collect training data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualizing-training-data">3.5 Visualizing training data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-unique-id">3.6 Adding unique ID</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#frequently-asked-questions">4. Frequently Asked Questions</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Open-MRV Tutorials</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Multiple Contributors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Bullock_TrainingData_QGIS_V1.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,21 @@
+.. Open-MRV documentation master file, created by
+   sphinx-quickstart on Thu Nov 12 16:31:02 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Open-MRV Tutorials
+==================
+
+Part 1: Land Cover Classification
+_________________________________
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   composite
+   qgis
+   gee
+   classification
+
+
